@@ -126,26 +126,39 @@ let rec flatten (xss) =
   match xss with
     | [] -> []
     | h :: t -> append (h, flatten (t))
-
 ;;
 
 (* flatten test *)
 (**
-  flatten [];;
-  flatten [[1;2;3]];;
-  flatten [[1;2;3];[4;5;6]];;
-  flatten [[1;2;3];[4;5;6];[7;8]];;
-  flatten [[1;2;3];[];[7;8]];;
-  flatten [["a"];["b"]];;
+   flatten [];;
+   flatten [[1;2;3]];;
+   flatten [[1;2;3];[4;5;6]];;
+   flatten [[1;2;3];[4;5;6];[7;8]];;
+   flatten [[1;2;3];[];[7;8]];;
+   flatten [["a"];["b"]];;
+ **)
+
+
+
+let rec last (xs) = 
+  match xs with 
+    | [] -> failwith "empty - no last element"
+    | [x] -> x
+    | h :: t -> last (t)
+;;
+
+(* last test *)
+(**
+  last ([1]);;
+  last ([1;2]);;
+  last ([1;2;3;4;5]);;
+  last (["a";"b";"c"]);;
+  last ([]);;
  **)
 
 
 
 let nth (n,xs) = 
-  failwith "not implemented"
-
-
-let last (xs) = 
   failwith "not implemented"
 
 

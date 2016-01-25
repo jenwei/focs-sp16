@@ -38,6 +38,7 @@ let rec gcd (a,b) =
    gcd (60,70);; (*10*)
  **)
 
+
 let is_coprime (a,b) = 
   gcd (a,b) == 1;;
 
@@ -48,6 +49,7 @@ let is_coprime (a,b) =
    is_coprime (10,20);;     (*false*)
    is_coprime (16,8);; (*false*)
  **)
+
 
 let euler_inner (n,x) = 
   if x == 1 then x
@@ -67,13 +69,24 @@ let euler (n) = euler_inner (n,n);;
    euler (5555);; (*4000*)
  **)
 
-let rec coprimes_inner (n,x) = 
+
+let rec coprimes_inner_old (n,x) = 
   (*http://stackoverflow.com/questions/6732524/what-is-the-easiest-way-to-add-an-element-to-the-end-of-the-list*)
   if x == 1 then [x]
-  else if is_coprime (n,x) then coprimes_inner (n,x-1) @ [x]
-  else coprimes_inner (n,x-1);;
+  else if is_coprime (n,x) then coprimes_inner_old (n,x-1) @ [x]
+  else coprimes_inner_old (n,x-1);;
 
-let coprimes (n) = coprimes_inner (n,n);;
+let coprimes_old (n) = coprimes_inner_old (n,n);;
+
+
+
+let rec coprimes_inner (n,x) = 
+  if x == n then 
+    if is_coprime (n,x) then [x] else []
+  else if is_coprime (n,x) then x :: coprimes_inner (n,x+1) 
+  else coprimes_inner (n,x+1);;
+
+let coprimes (n) = coprimes_inner (n,1);;
 
 (* coprimes test *)
 (**
@@ -90,12 +103,42 @@ let coprimes (n) = coprimes_inner (n,n);;
 
 (* Question 2 *)
 
-let append (xs,ys) = 
-  failwith "not implemented"
+let rec append (xs,ys) = 
+  (*http://rigaux.org/language-study/syntax-across-languages-per-language/OCaml.html for pattern matching syntax*)
+  (*https://realworldocaml.org/v1/en/html/lists-and-patterns.html for extracting data from a list*)
+  match xs with 
+    | h :: t -> h :: append (t,ys)
+    |[] -> ys
+;;
+
+(* append test *)
+(**
+   append ([],[]);;
+   append ([1],[]);;
+   append ([],[1]);;
+   append ([1;2;3],[4;5;6]);;
+   append (["a"],["b"]);;
+ **)
 
 
-let flatten (xss) = 
-  failwith "not implemented"
+
+let rec flatten (xss) = 
+  match xss with
+    | [] -> []
+    | h :: t -> append (h, flatten (t))
+
+;;
+
+(* flatten test *)
+(**
+  flatten [];;
+  flatten [[1;2;3]];;
+  flatten [[1;2;3];[4;5;6]];;
+  flatten [[1;2;3];[4;5;6];[7;8]];;
+  flatten [[1;2;3];[];[7;8]];;
+  flatten [["a"];["b"]];;
+ **)
+
 
 
 let nth (n,xs) = 

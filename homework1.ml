@@ -28,8 +28,9 @@ The functions below are stubs that you should replace with your
 
 let rec gcd (a,b) = 
   (*using the Euclidean algorithm mentioned in class*)
-  if b == 0 then a 
-  else gcd (b,a mod b);;
+  if b = 0 then a 
+  else gcd (b,a mod b)
+;;
 
 (* gcd test *)
 (**
@@ -39,8 +40,10 @@ let rec gcd (a,b) =
  **)
 
 
+
 let is_coprime (a,b) = 
-  gcd (a,b) == 1;;
+  gcd (a,b) = 1
+;;
 
 (* is_coprime test *)
 (**
@@ -51,10 +54,12 @@ let is_coprime (a,b) =
  **)
 
 
-let euler_inner (n,x) = 
-  if x == 1 then x
-  else if is_coprime (n,x) then euler_inner (n,x-1) + 1 
-  else euler_inner (n,x-1);;
+
+let rec euler_inner (n,x) = 
+  if x = 1 then x
+  else if is_coprime (n,x) then euler_inner (n,x-1) + 1
+  else euler_inner (n,x-1)
+;;
 
 let euler (n) = euler_inner (n,n);;
 
@@ -70,18 +75,20 @@ let euler (n) = euler_inner (n,n);;
  **)
 
 
+
 let rec coprimes_inner_old (n,x) = 
   (*http://stackoverflow.com/questions/6732524/what-is-the-easiest-way-to-add-an-element-to-the-end-of-the-list*)
-  if x == 1 then [x]
+  if x = 1 then [x]
   else if is_coprime (n,x) then coprimes_inner_old (n,x-1) @ [x]
-  else coprimes_inner_old (n,x-1);;
+  else coprimes_inner_old (n,x-1)
+;;
 
 let coprimes_old (n) = coprimes_inner_old (n,n);;
 
 
 
 let rec coprimes_inner (n,x) = 
-  if x == n then 
+  if x = n then 
     if is_coprime (n,x) then [x] else []
   else if is_coprime (n,x) then x :: coprimes_inner (n,x+1) 
   else coprimes_inner (n,x+1);;
@@ -108,7 +115,7 @@ let rec append (xs,ys) =
   (*https://realworldocaml.org/v1/en/html/lists-and-patterns.html for extracting data from a list*)
   match xs with 
     | h :: t -> h :: append (t,ys)
-    |[] -> ys
+    | [] -> ys
 ;;
 
 (* append test *)
@@ -149,21 +156,51 @@ let rec last (xs) =
 
 (* last test *)
 (**
-  last ([1]);;
-  last ([1;2]);;
-  last ([1;2;3;4;5]);;
-  last (["a";"b";"c"]);;
-  last ([]);;
+   last ([1]);;
+   last ([1;2]);;
+   last ([1;2;3;4;5]);;
+   last (["a";"b";"c"]);;
+   last ([]);;
  **)
 
 
 
-let nth (n,xs) = 
-  failwith "not implemented"
+let rec nth (n,xs) = 
+  match  (n,xs) with
+    | (0,h :: t) -> h
+    | (n,[]) -> failwith "out of bounds"
+    | (n,h :: t) -> nth (n-1,t)
+;;
+
+(* nth test *)
+(**
+   nth (0,["a";"b";"c"]);;
+   nth (1,["a";"b";"c"]);;
+   nth (2,["a";"b";"c"]);;
+   nth (3,["a";"b";"c"]);;
+   nth (0,[]);;
+ **)
 
 
-let separate (xs) = 
-  failwith "not implemented"
+
+let separate_inner (a,b,ls) = 
+  match ls with
+    | (x,y) -> (a::x,b::y)
+;;
+
+let rec separate (xs) = 
+  match xs with
+    | [] -> ([],[])
+    | (a,b)::tail -> separate_inner (a,b,(separate (tail)))
+;;
+
+(* separate test *)
+(**
+  separate [];;
+  separate [(1,2)];;
+  separate [(1,2);(3,4)];;
+  separate [(1,"a");(2,"b");(3,"c")];;
+ **)
 
 
 

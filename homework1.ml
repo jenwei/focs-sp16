@@ -7,9 +7,9 @@ Name: Jennifer Wei
 Email: jennifer.wei@students.olin.edu
 
 Remarks, if any:
-
+Worked with Pratool on debugging/talking through the last three problems (he was helping me understand)
+Also talked to Dennis about debugging
 *)
-
 
 (*
 * Please fill in this file with your solutions and submit it
@@ -55,13 +55,13 @@ let is_coprime (a,b) =
 
 
 
-let rec euler_inner (n,x) = 
+let rec eulerHelper (n,x) = 
   if x = 1 then x
-  else if is_coprime (n,x) then euler_inner (n,x-1) + 1
-  else euler_inner (n,x-1)
+  else if is_coprime (n,x) then eulerHelper (n,x-1) + 1
+  else eulerHelper (n,x-1)
 ;;
 
-let euler (n) = euler_inner (n,n);;
+let euler (n) = eulerHelper (n,n);;
 
 (* euler test *)
 (**
@@ -76,24 +76,24 @@ let euler (n) = euler_inner (n,n);;
 
 
 
-let rec coprimes_inner_old (n,x) = 
+let rec coprimesHelper_old (n,x) = 
   (*http://stackoverflow.com/questions/6732524/what-is-the-easiest-way-to-add-an-element-to-the-end-of-the-list*)
   if x = 1 then [x]
-  else if is_coprime (n,x) then coprimes_inner_old (n,x-1) @ [x]
-  else coprimes_inner_old (n,x-1)
+  else if is_coprime (n,x) then coprimesHelper_old (n,x-1) @ [x]
+  else coprimesHelper_old (n,x-1)
 ;;
 
-let coprimes_old (n) = coprimes_inner_old (n,n);;
+let coprimes_old (n) = coprimesHelper_old (n,n);;
 
 
 
-let rec coprimes_inner (n,x) = 
+let rec coprimesHelper(n,x) = 
   if x = n then 
     if is_coprime (n,x) then [x] else []
-  else if is_coprime (n,x) then x :: coprimes_inner (n,x+1) 
-  else coprimes_inner (n,x+1);;
+  else if is_coprime (n,x) then x::coprimesHelper (n,x+1) 
+  else coprimesHelper (n,x+1);;
 
-let coprimes (n) = coprimes_inner (n,1);;
+let coprimes (n) = coprimesHelper (n,1);;
 
 (* coprimes test *)
 (**
@@ -114,7 +114,7 @@ let rec append (xs,ys) =
   (*http://rigaux.org/language-study/syntax-across-languages-per-language/OCaml.html for pattern matching syntax*)
   (*https://realworldocaml.org/v1/en/html/lists-and-patterns.html for extracting data from a list*)
   match xs with 
-    | h :: t -> h :: append (t,ys)
+    | h::t -> h::append (t,ys)
     | [] -> ys
 ;;
 
@@ -132,7 +132,7 @@ let rec append (xs,ys) =
 let rec flatten (xss) = 
   match xss with
     | [] -> []
-    | h :: t -> append (h, flatten (t))
+    | h::t -> append (h,flatten (t))
 ;;
 
 (* flatten test *)
@@ -151,7 +151,7 @@ let rec last (xs) =
   match xs with 
     | [] -> failwith "empty - no last element"
     | [x] -> x
-    | h :: t -> last (t)
+    | h::t -> last (t)
 ;;
 
 (* last test *)
@@ -166,10 +166,10 @@ let rec last (xs) =
 
 
 let rec nth (n,xs) = 
-  match  (n,xs) with
-    | (0,h :: t) -> h
+  match (n,xs) with
+    | (0,h::t) -> h
     | (n,[]) -> failwith "out of bounds"
-    | (n,h :: t) -> nth (n-1,t)
+    | (n,h::t) -> nth (n-1,t)
 ;;
 
 (* nth test *)
@@ -183,7 +183,7 @@ let rec nth (n,xs) =
 
 
 
-let separate_inner (a,b,ls) = 
+let separateHelper (a,b,ls) = 
   match ls with
     | (x,y) -> (a::x,b::y)
 ;;
@@ -191,41 +191,119 @@ let separate_inner (a,b,ls) =
 let rec separate (xs) = 
   match xs with
     | [] -> ([],[])
-    | (a,b)::tail -> separate_inner (a,b,(separate (tail)))
+    | (a,b)::t -> separateHelper (a,b,(separate (t)))
 ;;
 
 (* separate test *)
 (**
-  separate [];;
-  separate [(1,2)];;
-  separate [(1,2);(3,4)];;
-  separate [(1,"a");(2,"b");(3,"c")];;
+   separate [];;
+   separate [(1,2)];;
+   separate [(1,2);(3,4)];;
+   separate [(1,"a");(2,"b");(3,"c")];;
  **)
 
 
 
 (* Question 3 *)
 
-let setIn (e,xs) = 
-  failwith "not implemented"
+let rec setIn (e,xs) = 
+  match xs with
+    | [] -> false
+    | h::t -> if h = e then true else setIn (e,t)
+;;
+
+(* setIn test *)
+(**
+   setIn (1,[]);;
+   setIn (1,[2;3]);;
+   setIn (1,[3;4;4;1;1;]);;
+   setIn ("a",["b";"a";"b"]);;
+ **)
 
 
-let setSub (xs,ys) = 
-  failwith "not implemented"
+
+let rec setSub (xs,ys) = 
+  match xs with
+    | [] -> true
+    | h::t -> if setIn (h,ys) then setSub (t,ys) else false
+;;
+
+(* setSub test *)
+(**
+   setSub ([],[]);;
+   setSub ([],[1;1;1]);;
+   setSub ([1],[1;1;1]);;
+   setSub ([1;1;],[1;1;1]);;
+   setSub ([1;1;],[2;3]);;
+   setSub (["a"],["a";"b"]);;
+ **)
+
 
 
 let setEqual (xs,ys) = 
-  failwith "not implemented"
+  setSub (xs,ys) && setSub (ys,xs)
+;;
+
+(* setEqual test *)
+(**
+   setEqual ([],[]);;
+   setEqual ([1],[1;1;1]);;
+   setEqual ([1;1;1],[1;1]);;
+   setEqual ([1;2],[2;1]);;
+   setEqual ([1;2],[1;2;3]);;
+ **)
 
 
-let setUnion (xs,ys) = 
-  failwith "not implemented"
+
+let rec setUnionHelper (xs,ys,ls) = 
+  match (xs,ys) with
+    | [],[] -> ls
+    | xh::xt,ys -> if setIn (xh,ys) then setUnionHelper (xt,ys,ls) else setUnionHelper (xt,xh::ys,ls)
+    | [],yh::yt -> if setIn (yh,yt) then setUnionHelper ([],yt,ls) else setUnionHelper ([],yt, yh::ls)
+;;
+
+let setUnion (xs,ys) = setUnionHelper (xs,ys,[]);;
+
+(* setUnion test *)
+setUnion ([1],[2]);; (*true*)
+setUnion ([],[1;1]);; (*true*)
+setUnion ([1;2;3],[4;5;6]);; (*true*)
+setUnion ([1],[2]);; (*false*)
 
 
-let setInter (xs,ys) = 
-  failwith "not implemented"
+
+let rec setInterHelper (xs,ys,ls) = 
+  match (xs) with
+    | []-> ls
+    | xh::xt -> if setIn (xh,ys) then setInterHelper (xt,ys,xh::ls) else setInterHelper (xt,ys,ls)
+;;
+
+let setInter (xs,ys) = setInterHelper (xs,ys,[]);;
+
+(* setInter test *)
+(**
+   setEqual (setInter ([],[]), []);;
+   setEqual (setInter ([1;2],[2;3]), [2]);;
+   setEqual (setInter ([1;2;3],[3;3;2;2]), [2;3]);;
+   setEqual (setInter ([1;2;3],[]), []);;
+   setEqual (setInter (["a";"b"],["c";"b"]), ["b"]);;
+   setEqual (setInter ([1;2],[2]), [1]);;
+ **)
 
 
-let setSize (xs) = 
-  failwith "not implemented"
 
+let rec setSizeCounter (xs,count) =
+  match xs with
+    | [] -> count
+    | h::t -> setSizeCounter(t,count+1)
+;;
+
+let setSize (xs) = setSizeCounter (setUnion ([],xs),0);;
+
+(* setSize test *)
+(**
+   setSize [];;
+   setSize [1];;
+   setSize [1;2;3];;
+   setSize [1;1;1;1;2;2;2;2;3;3;3;3;4;4;4;4];;
+ **)

@@ -7,7 +7,10 @@ Name: Jennifer Wei
 Email: jennifer.wei@students.olin.edu
 
 Remarks, if any:
-
+- Understood what all_strings is supposed to do and got it to work sketchily, but not 100% convinced that I can explain and visualize how it works
+- langUnion returns the right language, but the strings are in a different order :(
+- got langStar to work, but similar to all_strings, I don't completely understand it
+- couldn't get dump to work - not sure what I did wrong
 *)
 
 
@@ -57,8 +60,9 @@ let rec concatenate (alphabet, lang) =
   match (alphabet, lang) with
     | [],[] -> []
     | [],[x] -> []
-    | [],ss1 -> []
-    | h::t,ss2 -> (prepend (h, ss2)@concatenate (t, ss2))
+    | ss1,[] -> []
+    | [],ss2 -> []
+    | h::t,ss2 -> (prepend (h, ss2) @ concatenate (t, ss2))
 ;;
 
 (* concatenate test *)
@@ -72,30 +76,115 @@ let rec concatenate (alphabet, lang) =
  **)
 
 
+let rec all_stringsHelper (alphabet, n) =
+  match n with
+    | 0 -> []
+    | n -> alphabet @ concatenate (alphabet, all_stringsHelper (alphabet, n-1))
+;;
+
 let all_strings (alphabet, n) =
+  [""] @ all_stringsHelper (alphabet,  n)
 ;;
 
 (* all_strings test *)
-all_strings([],4);;
-all_strings(["a"],4);;
-all_strings(["a";"b"],4);;
-all_strings(["a";"b";"c"],4);;
-all_strings(["a";"b"],1);;
+(**
+   all_strings([],4);;
+   all_strings(["a"],4);;
+   all_strings(["a";"b"],4);;
+   all_strings(["a";"b";"c"],4);;
+   all_strings(["a";"b"],1);;
+ **)
+
 
 (* QUESTION 2 *)
 
-let restrict (xs,n) = failwith "not implemented"
+let rec restrict (xs,n) = 
+  match xs with
+    | [] -> []
+    | h::t -> if ((String.length h) <= n) then h::restrict (t, n) else (restrict (t, n))
+;;
+
+(* restrict test *)
+(**
+   restrict([],4);;
+   restrict(["a";"b"],4);;
+   restrict(["a";"b"],0);;
+   restrict(["a";"b"],1);;
+   restrict(["a";"b";"abc"],1);;
+   restrict(["a";"b";"abc"],2);;
+   restrict(["a";"b";"abc"],3);;
+ **)
 
 
-let langUnion (xs,ys,n) = failwith "not implemented"
+(* took this code from hw1 *)
+let rec setIn (e,xs) = 
+  match xs with
+    | [] -> false
+    | h::t -> if h = e then true else setIn (e,t)
+;;
+
+(* took this code from hw1 *)
+let rec setUnionHelper (xs,ys,ls) = 
+  match (xs,ys) with
+    | [],[] -> ls
+    | xh::xt,ys -> if setIn (xh,ys) then setUnionHelper (xt,ys,ls) else setUnionHelper (xt,xh::ys,ls)
+    | [],yh::yt -> if setIn (yh,yt) then setUnionHelper ([],yt,ls) else setUnionHelper ([],yt, yh::ls)
+;;
+
+(* took this code from hw1 *)
+let setUnion (xs,ys) = setUnionHelper (xs,ys,[]);;
+
+let langUnion (xs,ys,n) = 
+  setUnion (restrict (xs, n), restrict (ys, n))
+;;
+
+(* langUnion test *) 
+(**
+   langUnion([],[],4);;
+   langUnion(["a";"b"],["c";"d"],4);;
+   langUnion(["a";"b"],["abc";"abcd";"abcde"],4);;
+   langUnion(["abc";"abcd";"abcde"],["a";"b"],4);;
+   langUnion(["abc";"abcd";"abcde"],[],4);;
+   langUnion([],["abc";"abcd";"abcde"],4);;
+ **)
 
 
-let langConcat (xs,ys,n) = failwith "not implemented"
+let rec langConcat (xs,ys,n) = 
+  match xs with
+    | [] -> []
+    | h::t -> restrict (prepend (h, ys) @ langConcat(t, ys, n), n)
+;;
+
+(* langConcat test *)
+(**
+   langConcat([],[],4);;
+   langConcat(["a";"b"],[],4);;
+   langConcat([],["c";"d"],4);;
+   langConcat(["a";"b"],["c";"d"],4);;
+   langConcat(["ab";"abb"],["c";"cc";"ccc"],4);;
+ **)
 
 
-let langStar (xs,n) = failwith "not implemented"
+(* referenced all_strings*)
+let rec langStarHelper (xs,n) = 
+  match n with
+    | 0 -> []
+    | n -> xs @ langConcat (xs, langStarHelper(xs, n-1), n)
+;;
 
+let langStar (xs, n) = 
+  [""] @ langStarHelper (xs,n)
+;;
 
+(* langStar test *)
+(**
+   langStar([],4);;
+   langStar(["a"],4);;
+   langStar(["a";"b"],4);;
+   langStar(["a";"b";"c"],4);;
+   langStar(["a";"bc"],4);;
+   langStar(["a";"bc";"def"],4);;
+ **)
 
 (* QUESTION 3 *)
 
@@ -199,16 +288,18 @@ let dump l =
   List.iter (fun s -> match s with "" -> print_string "  <empty>\n" 
                                  | s -> print_string ("  "^s^"\n")) l
 
+let regexp_a = "(a+b)(a+b)(a+b)";;
+(**(lang(regexp_a,6));;**)
+(*language consisting of all strings over the alphabet {a,b} of length 3*)
 
+let regexp_b = "((a+b)(a+b)(a+b))*";;
+(*language consisting of all strings over the alphabet {a,b} of length multiple of 3*)
 
-(* Placeholder for your regular expression. Replace "0" by your actual answer *)
+let regexp_c = "(b)*a(b)*";;
+(*language consisting of all strings over the alphabet {a,b} with exactly one a in them*)
 
-let regexp_a = "0"
+let regexp_d = "b*ab*(ab*ab*)*";;
+(*language consisting of all strings over the alphabet {a,b} with an odd number of a's in them*)
 
-let regexp_b = "0"
-
-let regexp_c = "0"
-
-let regexp_d = "0"
-
-let regexp_e = "0"
+let regexp_e = "(a+ba)*";;
+(*language consisting of all strings over the alphabet {a,b} in which every b is immediately followed by an a*)

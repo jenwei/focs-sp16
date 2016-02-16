@@ -10,7 +10,9 @@ Remarks, if any:
 - My compiler was super unhappy with the use of String.create and String.set in implode
 so I had to switch it to Bytes - weird
 - I don't fully understand how steps works - I knew the general structure that/format it needed to be in and tested until the test cases worked (will follow up with others to resolve my confusion)
-- Got help from Dennis with how to approach isDFA
+- Got help from Dennis with how to approach isDFA (had issues figuring how what helper functions I'd need
+- I've been using a lot of parentheses to help me read the code better, but apparently parentheses make a different? Didn't get a chance to clarify with the NINJAs about what they meant with that
+- Got help from Kyle on Q3 stepAll (seemed like I could just reuse Q1 code, but I kept getting errors when I ran the tests)
 *)
 
 
@@ -194,11 +196,13 @@ let rec findTransitionCount (ds,q,a) =
         else findTransitionCount (t,q,a)
 ;;
 
+
 let rec oneTransition (ds,q,symbols) = 
   match symbols with 
     | [] -> true
     | h::t -> if findTransitionCount (ds,q,h) = 1 then oneTransition (ds,q,t) else false
 ;;
+
 
 let rec isDFAHelper (ds,states,symbols) = 
   (*checks if every state and every symbol has exactly one transition*)
@@ -206,6 +210,7 @@ let rec isDFAHelper (ds,states,symbols) =
     | [] -> true
     | h::t -> if oneTransition (ds,h,symbols) then isDFAHelper (ds,t,symbols) else false
 ;;
+
 
 let isDFA (fa) = isDFAHelper (fa.delta,fa.states,fa.alphabet);;
 
@@ -236,14 +241,14 @@ let acceptDFA (fa,input) =
 
 (* acceptDFA test *)
 (**
-  acceptDFA (dfaThreeA,"");;
-  acceptDFA (dfaThreeA,"a");;
-  acceptDFA (dfaThreeA,"b");;
-  acceptDFA (dfaThreeA,"aa");;
-  acceptDFA (dfaThreeA,"aaa");;
-  acceptDFA (dfaThreeA,"ababa");;
-  acceptDFA (dfaThreeA,"abababa");;
-  langDFA (dfaThreeA,6);; (*this doesn't work because it doesn't know what langDFA is yet*)
+   acceptDFA (dfaThreeA,"");;
+   acceptDFA (dfaThreeA,"a");;
+   acceptDFA (dfaThreeA,"b");;
+   acceptDFA (dfaThreeA,"aa");;
+   acceptDFA (dfaThreeA,"aaa");;
+   acceptDFA (dfaThreeA,"ababa");;
+   acceptDFA (dfaThreeA,"abababa");;
+   langDFA (dfaThreeA,6);; (*this doesn't work because it doesn't know what langDFA is yet*)
  **)
 
 
@@ -252,70 +257,233 @@ let acceptDFA (fa,input) =
 (* THESE ARE PLACEHOLDERS - THEY DEFINE EMPTY AUTOMATA *)
 (* REPLACE BY YOUR OWN DEFINITIONS *)
 
+(*no more than two consecutive bs in a row*)
+let dfa_q2_a = { states = [0;1;2;3]; 
+                 alphabet = ['a';'b'];
+                 delta = [(0,'a',0);
+                          (0,'b',1);
+                          (1,'a',1);
+                          (1,'b',2);
+                          (2,'a',0);
+                          (2,'b',3); (*dump*)
+                          (3,'a',3);
+                          (3,'b',3);
+                         ];
+                 start = 0;
+                 accepting = [0;1;2]
+               };;
 
-let dfa_q2_a = { states = [0];
-                 		 alphabet = ['a'];
-                 		 delta = [ ];
-                 		 start = 0;
-                 		 accepting = []}
+(*no more than three consecutive letters in a row*)
+let dfa_q2_b = { states = [0;1;2;3;4;5;6;10];
+                 alphabet = ['a';'b'];
+                 delta = [(0,'a',1); (*start of a chain*)
+                          (0,'b',4); (*start of b chain*)
+                          (1,'a',2);
+                          (1,'b',5);
+                          (2,'a',3);
+                          (2,'b',5);
+                          (3,'a',10); (*dump*)
+                          (3,'b',4);
+                          (4,'a',1);
+                          (4,'b',5);
+                          (5,'a',1);
+                          (5,'b',6);
+                          (6,'a',1);
+                          (6,'b',10); (*dump*)
+                          (10,'a',10);
+                          (10,'b',10);
+                         ];
+                 start = 0;
+                 accepting = [0;1;2;3;4;5;6]
+               };;
 
+(*three or more consecutives at least (opposite of 2b)*)
+let dfa_q2_c = { states = [0;1;2;3;4;5;6;10];
+                 alphabet = ['a';'b'];
+                 delta = [(0,'a',1); (*start of a chain*)
+                          (0,'b',4); (*start of b chain*)
+                          (1,'a',2);
+                          (1,'b',5);
+                          (2,'a',3);
+                          (2,'b',5);
+                          (3,'a',10); (*dump*)
+                          (3,'b',4);
+                          (4,'a',1);
+                          (4,'b',5);
+                          (5,'a',1);
+                          (5,'b',6);
+                          (6,'a',1);
+                          (6,'b',10); (*dump*)
+                          (10,'a',10);
+                          (10,'b',10); 
+                         ];
+                 start = 0;
+                 accepting = [3;6;10]
+               };;
 
-let dfa_q2_b = { states = [0];
-                 		 alphabet = ['a'];
-                 		 delta = [ ];
-                 		 start = 0;
-                 		 accepting = []}
-
-
-let dfa_q2_c = { states = [0];
-                 		 alphabet = ['a'];
-                 		 delta = [ ];
-                 		 start = 0;
-                 		 accepting = []}
-
-
-let nfa_q2_d = { states = [0];
-                 		 alphabet = ['a'];
-                 		 delta = [ ];
-                 		 start = 0;
-                 		 accepting = []}
-
-
+(*all strings over alphabet {a,b} except those that do not end with an a
+  where there are no bs in the first three symbols of the string*)
+let nfa_q2_d = { states = [0;1;2;3;4;10];
+                 alphabet = ['a';'b'];
+                 delta = [ (0,'a',1);
+                           (0,'b',10); (*ok*)
+                           (1,'a',2);
+                           (1,'b',10); (*ok*)
+                           (2,'a',3);
+                           (2,'b',10); (*ok*)
+                           (3,'a',3);
+                           (3,'b',4);
+                           (4,'a',3);
+                           (4,'b',4); (*does not meet requirement*)
+                           (10,'a',10);
+                           (10,'b',10);
+                         ];
+                 start = 0;
+                 accepting = [0;1;2;3;10]
+               };;
 
 
 (* QUESTION 3 *)
 
 
-let keepTarget (trs) = failwith "keepTarget not implemented"
+(*takes a list of transitions and returns list of all states that those transitions lead to (the target)*)
+(*use has function to check for duplicates*)
+let rec keepTarget (trs) =
+  match trs with
+    | [] -> []
+    | (x,y,z)::t -> 
+        if has (keepTarget (t),z) then keepTarget (t) else z::keepTarget (t)
 ;;
 
 (* keepTarget tests *)
+(**
+   keepTarget [];; 
+   keepTarget [(1,'a',2);(1,'b',3)];;
+   keepTarget [(1,'a',2);(1,'b',3);(2,'a',2)];;
+   keepTarget (dfaThreeA.delta);;
+   keepTarget (nfaLastThreeB.delta);;
+ **)
 
 
-let isAcceptingAny (fa,qs) = failwith "isAcceptingAny not implemented"
+(*takes fa and list of states qs of m and returns true if any states in qs is an accepting state*)
+let rec isAcceptingAny (fa,qs) = 
+  match qs with
+    | [] -> false
+    | h::t -> if has (fa.accepting,h) then true else isAcceptingAny (fa,t)
 ;;
 
 (* isAcceptingAny tests *)
+(**
+   isAcceptingAny (nfaLastThreeB, []);;
+   isAcceptingAny (nfaLastThreeB, [0]);;
+   isAcceptingAny (nfaLastThreeB, [0;1]);;
+   isAcceptingAny (nfaLastThreeB, [0;1;2]);;
+   isAcceptingAny (nfaLastThreeB, [0;1;2;3]);;
+   isAcceptingAny (nfaLastThreeB, [3]);;
+ **)
 
 
-let rec stepAll (fa,qs,a) = failwith "stepAll not implemented"
+(*takes fa list of states qs of m and symbol a of m and returns list of all states resulting from taking a transition from any state in qs following symbol a*)
+(*remove dups*)
+
+let nfaLastThreeB = {
+  states = [0;2;3;4];
+  alphabet = ['a';'b';'c'];
+  delta = [ (0,'a',0);
+            (0,'b',0);
+            (0,'c',0);
+            (0,'b',1);
+            (1,'b',2);
+            (2,'b',3); ];
+  start = 0;
+  accepting = [3]
+} 
+
+(*stole this from Q1*)
+let rec stepHelper (ds,q,a) =
+  (*returns state of m resulting from the transition from q that applies to the deltas*)
+  match ds with
+    | [] -> []
+    | (x,y,z)::t -> if (x=q && y=a) then z::stepHelper (t,q,a) (*updated this from Q1 to con z with stepHelper*) else stepHelper (t,q,a)
 ;;
+
+let stepQ3 (fa,q,a) = stepHelper (fa.delta,q,a);;
+
+let rec stepAllHelper (fa,qs,a) =
+  (*goes through all states and appends the outputs*)
+  match qs with
+    | [] -> []
+    | h::t -> stepQ3 (fa,h,a)@stepAllHelper (fa,t,a) (*updated this from :: to @*)
+;;
+
+let rec removeDuplicates (vals) = 
+  match vals with
+    | [] -> []
+    | h::t -> if has (t,h) then removeDuplicates (t) else h::(removeDuplicates (t))
+;;
+
+let stepAll (fa,qs,a) = removeDuplicates (stepAllHelper (fa,qs,a));;
 
 (* stepAll tests *) 
+(**
+   stepAll (dfaThreeA,[],'a');;
+   stepAll (dfaThreeA,["start"],'a');;
+   stepAll (dfaThreeA,["start"],'b');;
+   stepAll (dfaThreeA,["start";"one"],'a');;
+   stepAll (dfaThreeA,["start";"one"],'b');;
+   stepAll (nfaLastThreeB,[0;1],'a');;
+   stepAll (nfaLastThreeB,[0;1],'b');;
+ **)
 
 
-let rec stepsAll (fa,qs,syms) = failwith "stepsAll not implemented"
+let rec reverse (xs) = 
+  match xs with 
+    | [] -> []
+    | h::t -> reverse (t) @ [h]
 ;;
 
+let rec stepsAllHelper (fa,qs,syms) = 
+  (*takes a DFA m, a state q of m, and a list of symbols l, and returns the state of m resulting from following the transitions of m from q according to the symbols in l*)
+  match syms with 
+    | [] -> qs
+    | h::t -> stepAll(fa,stepsAllHelper (fa,qs,t), h)
+;;
+
+let stepsAll (fa,qs,syms) = stepsAllHelper (fa,qs,reverse(syms));; 
+(*Talked to Dennis and Kyle, who helped me debug this and suggested reversing the symbols*)
+
+
 (* stepsAll tests *)
+(**
+   stepsAll (dfaThreeA,[],[]);;
+   stepsAll (dfaThreeA,[],['a']);;
+   stepsAll (dfaThreeA,[],['a';'b']);;
+   stepsAll (dfaThreeA,["start"],[]);;
+   stepsAll (dfaThreeA,["start"],['a']);;
+   stepsAll (dfaThreeA,["start"],['a';'b']);;
+   stepsAll (dfaThreeA,["start"],['a';'a']);;
+   stepsAll (dfaThreeA,["start";"one"],['a';'a']);;
+   stepsAll (dfaThreeA,["start";"one"],['a';'a';'b']);;
+   stepsAll (dfaThreeA,["start";"one"],['a';'a';'b';'a']);;
+   stepsAll (nfaLastThreeB,[0;1],['a';'b';'b';'b']);;
+ **)
 
 
-let acceptNFA (fa,input) = failwith "acceptNFA not implemented"
+let acceptNFA (fa,input) = 
+  (*takes fa and string and returns true if m accepts s, false otherwise*)
+  let charsList = explode (input) in 
+    isAcceptingAny (fa,stepsAll(fa,[fa.start],charsList))
 ;;
 
 (* acceptNFA tests *)
-
-
+(**
+  acceptNFA (dfaThreeA,"babab");;
+  acceptNFA (dfaThreeA,"bababa");;
+  acceptNFA (dfaThreeA,"bababab");;
+  acceptNFA (nfaLastThreeB,"abb");;
+  acceptNFA (nfaLastThreeB,"abbb");;
+  langNFA (nfaLastThreeB,7);;
+ **)
 
 (* 
 * A sample DFA for testing
@@ -329,11 +497,11 @@ let dfaThreeA = {
   states = ["start";"one";"two"];
   alphabet = ['a';'b'];
   delta = [ ("start",'a',"one");
-            	    ("one",'a',"two");
-            	    ("two",'a',"start");
-            	    ("start",'b',"start");
-            	    ("one",'b',"one");
-            	    ("two",'b',"two") ];
+            ("one",'a',"two");
+            ("two",'a',"start");
+            ("start",'b',"start");
+            ("one",'b',"one");
+            ("two",'b',"two") ];
   start = "start";
   accepting = ["start"]
 } 
@@ -351,11 +519,11 @@ let nfaLastThreeB = {
   states = [0;2;3;4];
   alphabet = ['a';'b';'c'];
   delta = [ (0,'a',0);
-            	    (0,'b',0);
-            	    (0,'c',0);
-            	    (0,'b',1);
-            	    (1,'b',2);
-            	    (2,'b',3); ];
+            (0,'b',0);
+            (0,'c',0);
+            (0,'b',1);
+            (1,'b',2);
+            (2,'b',3); ];
   start = 0;
   accepting = [3]
 } 

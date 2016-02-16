@@ -57,10 +57,10 @@ let implode cs =
 *)
 
 type 'a dfa = { states: 'a list;
-                		alphabet: char list;
-                		delta: 'a -> char -> 'a;
-                		start : 'a;
-                		accepting : 'a list }
+                alphabet: char list;
+                delta: 'a -> char -> 'a;
+                start : 'a;
+                accepting : 'a list }
 
 
 (*
@@ -74,23 +74,30 @@ let dfaThreeA = {
   alphabet = ['a';'b'];
   delta = (fun q a -> 
             match (q,a) with
-                	       ("start",'a') -> "one"
-              	     | ("one",'a') -> "two"
-              	     | ("two",'a') -> "start"
-              	     | ("start",'b') -> "start"
-              	     | ("one",'b') -> "one"
-              	     | ("two",'b') -> "two");
+                ("start",'a') -> "one"
+              | ("one",'a') -> "two"
+              | ("two",'a') -> "start"
+              | ("start",'b') -> "start"
+              | ("one",'b') -> "one"
+              | ("two",'b') -> "two");
   start = "start";
   accepting = ["start"]
 } 
 
 
 
-
 (* QUESTION 1 *)
 
 
-let isAccepting dfa s = failwith "isAccepting not implemented"
+let isAccepting dfa s = List.fold_right (fun (h,acc) -> if (h=s) then true else acc) dfa.accepting false ;;
+
+
+
+
+(* isAccepting test *)
+isAccepting dfaThreeA "start";;
+isAccepting dfaThreeA "one";;
+isAccepting dfaThreeA "two";;
 
 
 let steps dfa q syms = failwith "steps not implemented"
@@ -130,7 +137,7 @@ let langDFA dfa n =
         else print_string ("  "^s^"\n")  in
       let rec loop i = 
         if i <= n then 
-          	let ts = to_string dfa.alphabet i  in
+          let ts = to_string dfa.alphabet i  in
           let bound = expt (List.length dfa.alphabet) i in
           let rec loop2 j = 
             if j < bound then (if acceptDFA dfa (ts j) 

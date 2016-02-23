@@ -7,6 +7,9 @@
    Email: jennifer.wei@students.olin.edu
 
    Remarks, if any:
+   - is there a less sketchy way of getting around the pattern matching is not exhaustive warning? 
+   - I may have mentioned this on a previous hw, but I'm still a bit confused about functions and when to put parentheses around inputs and when not to
+
 
  ***************************************************)
 
@@ -74,12 +77,13 @@ let dfaThreeA = {
   alphabet = ['a';'b'];
   delta = (fun q a -> 
             match (q,a) with
-                ("start",'a') -> "one"
+              | ("start",'a') -> "one"
               | ("one",'a') -> "two"
               | ("two",'a') -> "start"
               | ("start",'b') -> "start"
               | ("one",'b') -> "one"
-              | ("two",'b') -> "two");
+              | ("two",'b') -> "two"
+              | (_,_) -> "meh"); (*added this b/c it wouldn't compile otherwise*)
   start = "start";
   accepting = ["start"]
 } 
@@ -89,22 +93,46 @@ let dfaThreeA = {
 (* QUESTION 1 *)
 
 
-let isAccepting dfa s = List.fold_right (fun (h,acc) -> if (h=s) then true else acc) dfa.accepting false ;;
+(* takes a dfa and state and returns true when h is an accepting state, false otherwise *)
+let isAccepting dfa s = List.fold_right (fun h acc -> if (h=s) then true else acc) dfa.accepting false ;;
+
+(* isAccepting tests *)
+(**
+   isAccepting dfaThreeA "start";;
+   isAccepting dfaThreeA "one";;
+   isAccepting dfaThreeA "two";;
+ **)
 
 
+(* takes a dfa, state, and list of symbols returns state resulting from transition of dfa from q according to symbols *)
+let steps dfa q syms = List.fold_right (fun l acc -> dfa.delta acc l) syms q;;
+
+(* steps tests *)
+(**
+   steps dfaThreeA "start" [];;
+   steps dfaThreeA "start" ['a'];;
+   steps dfaThreeA "start" ['a';'b'];;
+   steps dfaThreeA "start" ['a';'b';'a'];;
+   steps dfaThreeA "one" [];;
+   steps dfaThreeA "one" ['a'];;
+   steps dfaThreeA "one" ['a';'b'];;
+   steps dfaThreeA "one" ['a';'b';'a'];;
+ **)
 
 
-(* isAccepting test *)
-isAccepting dfaThreeA "start";;
-isAccepting dfaThreeA "one";;
-isAccepting dfaThreeA "two";;
+(* takes a dfa and string and returns true if m accepts s, false otherwise *)
+let acceptDFA dfa input = let exploded = explode input in isAccepting dfa (steps dfa dfa.start exploded);;
 
-
-let steps dfa q syms = failwith "steps not implemented"
-
-
-let acceptDFA dfa input = failwith "acceptDFA not implemented"
-
+(* acceptDFA tests *)
+(**
+   acceptDFA dfaThreeA "";;
+   acceptDFA dfaThreeA "a";;
+   acceptDFA dfaThreeA "b";;
+   acceptDFA dfaThreeA "aa";;
+   acceptDFA dfaThreeA "aaa";;
+   acceptDFA dfaThreeA "ababa";;
+   acceptDFA dfaThreeA "abababa";;
+ **)
 
 
 (* This function loops through all the strings
@@ -151,40 +179,126 @@ let langDFA dfa n =
 
 
 
-
-
 (* QUESTION 2 *)
+(** used http://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html for reference**)
+
+(* returns true if at least n elements in xs satisfy p *)
+let at_least n p xs = 
+  if List.length (List.find_all p xs) >= n then true 
+  else false
+;;
+
+(* at_least tests *)
+(**
+   at_least 0 (fun x -> x) [];;
+   at_least 1 (fun x -> x) [];;
+   at_least 0 (fun x -> x) [true;true;false];;
+   at_least 1 (fun x -> x > 0) [2;3;0];;
+   at_least 2 (fun x -> x > 0) [2;3;0];;
+   at_least 3 (fun x -> x > 0) [2;3;0];;
+ **)
 
 
-let max_positive xs =  failwith "max_positive not implemented"
+let max_positive xs =  List.fold_right (fun h acc -> if (h>acc) then h else acc) xs 0;;
+
+(* max_positive tests *)
+(**
+   max_positive [];;
+   max_positive [4];;
+   max_positive [4;5];;
+   max_positive [5;4];;
+   max_positive [4;6;5];;
+   max_positive [-1;-2;-3];;
+ **)
 
 
-let at_least n p xs =  failwith "at_least not implemented"
+(* List.map f [a1;...;an] applies f to a1,...,an and builts results list *)
+let map_funs fs x =  List.map (fun f -> f x) fs;;
+
+(* map_fun tests *)
+let dbl x = "double of "^(string_of_int x);;
+let neg x = "negation of "^(string_of_int x);;
+map_funs [] 3;;
+map_funs [dbl] 3;;
+map_funs [dbl;neg] 3;;
+map_funs [dbl;neg;dbl] 3;;
+map_funs [(fun x -> x * 2); (fun x -> x * x)] 10;;
+map_funs [(fun x -> "+"^x); (fun x -> "-"^x)] "hello";;
 
 
-let map_funs fs x =  failwith "map_funs not implemented"
+let map_cross fs xs = List.fold_right (fun h acc -> (map_funs fs h) @ acc) xs [];;
+
+(* map cross tests *)
+(**
+   map_cross [] [];;
+   map_cross [] [1;2;3];;
+   map_cross [dbl; neg] [];;
+   map_cross [dbl] [3];;
+   map_cross [dbl] [1;2;3];;
+   map_cross [dbl;neg] [3];;
+   map_cross [dbl;neg] [1;2;3];;
+   map_cross [(fun x -> "+"^x);(fun x -> "-"^x)] ["hello";"world"];;
+ **)
+
+(* goes through all the xs using fold_right and uses map to create the pairs for each x and the ys, appending all the results into a final array*)
+let all_pairings xs ys = List.fold_right (fun h acc -> ((List.map (fun y -> (h,y)) ys) @ acc)) xs [];;
 
 
-let map_cross fs xs =  failwith "map_cross not implemented"
-
-
-let all_pairings xs ys =  failwith "all_pairings not implemented"
-
-
+(* all_pairings tests *)
+(**
+  all_pairings [] [];;
+  all_pairings [1;2] [];;
+  all_pairings [] ["a";"b";"c"];;
+  all_pairings [1] ["a";"b";"c"];;
+  all_pairings [1;2] ["a"];;
+  all_pairings [1;2] ["a";"b";"c"];;
+ **)
 
 
 
 (* QUESTION 3 *)
 
+(* prefixes xs returns list of all prefixes of xs with empty list*)
+let prefixes xs =  failwith "prefixes not implemented";;
 
-let prefixes xs =  failwith "prefixes not implemented"
+prefixes [];;
+prefixes [1];;
+prefixes [1;2;3;4];;
+prefixes ["a";"b"];;
 
 
-let suffixes xs =  failwith "suffixes not implemented"
+
+(* returns list of suffixes of xs with empty list *)
+let suffixes xs =  failwith "suffixes not implemented";;
+
+suffixes [];;
+suffixes [1];;
+suffixes [1;2;3;4];;
+suffixes ["a";"b";"c"];;
 
 
-let inject a xs =  failwith "inject not implemented"
+
+(* returns all ways in which value a can be added to list xs *)
+let inject a xs =  failwith "inject not implemented";;
+
+inject 99 [];;
+inject 99 [1];;
+inject 99 [1;2];;
+inject 99 [1;2;3;4];;
+inject "X" ["a";"b"];;
 
 
-let permutations xs =  failwith "permutations not implemented"
+
+(* rturns list of all permutations of xs (different order of same elements, treat repeated elements as distinct *)
+let permutations xs =  failwith "permutations not implemented";;
+
+permutations [];;
+permutations [1];;
+permutations [1;2];;
+permutations [1;2;3;4];;
+permutations ["a";"b"];;
+
+
+
+
 

@@ -9,6 +9,9 @@
    Remarks, if any:
    - is there a less sketchy way of getting around the pattern matching is not exhaustive warning? 
    - I may have mentioned this on a previous hw, but I'm still a bit confused about functions and when to put parentheses around inputs and when not to
+   - prefixes is SUPER sketchy, where I accidentally got suffixes to work first and just modified that until prefixes worked
+   - received some help with Q3 from Sophie about how to approach
+   - received some help from Nitya on permutations and how to think about it (it's so nested - was a bit tough to think about)
 
 
  ***************************************************)
@@ -246,12 +249,12 @@ let all_pairings xs ys = List.fold_right (fun h acc -> ((List.map (fun y -> (h,y
 
 (* all_pairings tests *)
 (**
-  all_pairings [] [];;
-  all_pairings [1;2] [];;
-  all_pairings [] ["a";"b";"c"];;
-  all_pairings [1] ["a";"b";"c"];;
-  all_pairings [1;2] ["a"];;
-  all_pairings [1;2] ["a";"b";"c"];;
+   all_pairings [] [];;
+   all_pairings [1;2] [];;
+   all_pairings [] ["a";"b";"c"];;
+   all_pairings [1] ["a";"b";"c"];;
+   all_pairings [1;2] ["a"];;
+   all_pairings [1;2] ["a";"b";"c"];;
  **)
 
 
@@ -259,46 +262,71 @@ let all_pairings xs ys = List.fold_right (fun h acc -> ((List.map (fun y -> (h,y
 (* QUESTION 3 *)
 
 (* prefixes xs returns list of all prefixes of xs with empty list*)
-let prefixes xs =  failwith "prefixes not implemented";;
 
-prefixes [];;
-prefixes [1];;
-prefixes [1;2;3;4];;
-prefixes ["a";"b"];;
+let prefixes xs = 
+  let xs = List.rev xs in
+    (* use List.hd acc to grab the previous array and add to that *)
+    (* this is a sketchy implementation where I got suffixes to work first 
+       and just built off of that until this appeared to work *)
+    List.rev (List.fold_right (fun h acc -> ((List.hd acc) @ [h]) :: acc) xs [[]])
+;;
+
+(* prefixes tests *)
+(**
+   prefixes [];;
+   prefixes [1];;
+   prefixes [1;2;3;4];;
+   prefixes ["a";"b"];;
+ **)
 
 
 
 (* returns list of suffixes of xs with empty list *)
-let suffixes xs =  failwith "suffixes not implemented";;
+let suffixes xs =  
+  (* Similar to prefixes except don't need the reverse with basecase of an empty array 
+     and adding arrays in front of it*)
+  List.fold_right (fun h acc -> ([h] @ (List.hd acc)) :: acc) xs [[]]
+;;
 
-suffixes [];;
-suffixes [1];;
-suffixes [1;2;3;4];;
-suffixes ["a";"b";"c"];;
-
-
-
-(* returns all ways in which value a can be added to list xs *)
-let inject a xs =  failwith "inject not implemented";;
-
-inject 99 [];;
-inject 99 [1];;
-inject 99 [1;2];;
-inject 99 [1;2;3;4];;
-inject "X" ["a";"b"];;
+(* suffixes tests *)
+(**
+   suffixes [];;
+   suffixes [1];;
+   suffixes [1;2;3;4];;
+   suffixes ["a";"b";"c"];;
+ **)
 
 
 
-(* rturns list of all permutations of xs (different order of same elements, treat repeated elements as distinct *)
-let permutations xs =  failwith "permutations not implemented";;
+(* returns all ways in which value a can be added to list xs *) (* uses old functs plus map2 - hope that's ok *)
+let inject a xs =
+  let combine x y = x@[a]@y and pres = prefixes xs and sufs = suffixes xs in
+    List.map2 combine pres sufs
+;;
 
-permutations [];;
-permutations [1];;
-permutations [1;2];;
-permutations [1;2;3;4];;
-permutations ["a";"b"];;
+(* inject tests *)
+(**
+   inject 99 [];; (* int list list = [[99]] *)
+   inject 99 [1];; (* int list list = [[99; 1]; [1; 99]] *)
+   inject 99 [1;2];; (* int list list = [[99; 1; 2]; [1; 99; 2]; [1; 2; 99]] *)
+   inject 99 [1;2;3;4];; (* int list list = [[99; 1; 2; 3; 4]; [1; 99; 2; 3; 4]; [1; 2; 99; 3; 4]; [1; 2; 3; 99; 4]; [1; 2; 3; 4; 99]] *)
+   inject "X" ["a";"b"];; 
+ **)
 
 
 
+(* used to inject x into each subarray in acc from permutations *)
+let permutationsHelper x xs = List.fold_right (fun sub acc -> (inject x sub) @ acc) xs [];;
+(* returns list of all permutations of xs (different order of same elements, treat repeated elements as distinct *)
+let permutations xs =  List.fold_right (fun h acc -> (permutationsHelper h acc)) xs [[]];;
+
+(* permutations tests *)
+(**
+   permutations [];;
+   permutations [1];;
+   permutations [1;2];;
+   permutations [1;2;3;4];;
+   permutations ["a";"b"];;
+ **)
 
 

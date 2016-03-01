@@ -499,8 +499,8 @@ let tm_q2_a = { states = ["start";"q1";"q2";"q3";"q4";"q5";"q6";"q7";"acc";"rej"
                           | ("q7", "x") -> ("q1", "x", 1)
 
                           (*if state is accept then stay there*)
-                          | ("acc", "c") -> ("acc", "a", 1)
-                          | ("acc", "d") -> ("acc", "b", 1)
+                          | ("acc", "c") -> ("acc", "c", 1)
+                          | ("acc", "d") -> ("acc", "d", 1)
                           | ("acc", ">") -> ("acc", ">", 1)
                           | ("acc", "_") -> ("acc", "_", 1)
                           | ("acc", "x") -> ("acc", "x", 1)
@@ -512,106 +512,102 @@ let tm_q2_a = { states = ["start";"q1";"q2";"q3";"q4";"q5";"q6";"q7";"acc";"rej"
 
 (* tm_q2_a tests *)
 (**
-  run tm_q2_a "";;
-  run tm_q2_a "c";;
-  run tm_q2_a "cc";;
-  run tm_q2_a "dd";;
-  run tm_q2_a "cddc";;
-  run tm_q2_a "cdc";;
-  run tm_q2_a "ccdcc";;
-  run tm_q2_a "ccdccc";;
-  run tm_q2_a "ccdc";;
-  run tm_q2_a "dcdc";;
+   run tm_q2_a "";;
+   run tm_q2_a "c";;
+   run tm_q2_a "cc";;
+   run tm_q2_a "dd";;
+   run tm_q2_a "cddc";;
+   run tm_q2_a "cdc";;
+   run tm_q2_a "ccdcc";;
+   run tm_q2_a "ccdccc";;
+   run tm_q2_a "ccdc";;
+   run tm_q2_a "dcdc";;
  **)
 
 
 
 
-  let tm_q2_b = { states = ["start";"q1";"q2";"q3";"q4";"q5";"q6";"q7"];
-  input_alphabet = ["c";"d"];
-  tape_alphabet = [">";"c";"d";"x";"_"];
-  blank = "_";
-  left_marker = ">";
-  start = "start";
-  accept = "acc";
-  reject = "rej";
-  delta = (fun inp -> match inp with 
+let tm_q2_b = { states = ["start";"q1";"q2";"q3";"q4";"q5";"q6";"acc";"rej"];
+                input_alphabet = ["a";"b"];
+                tape_alphabet = [">";"a";"b";"x";"_"];
+                blank = "_";
+                left_marker = ">";
+                start = "start";
+                accept = "acc";
+                reject = "rej";
+                delta = (fun inp -> match inp with 
 
-  | ("start", ">") -> ("q1", ">", 1)
+                          | ("start", ">") -> ("q1", ">", 1)
 
-  (*searching for first letter*)
-  | ("q1", "c") -> ("q2", "x", 1)
-  | ("q1", "d") -> ("q5", "x", 1)
-  | ("q1", "_") -> ("acc", "_", 1)
-  | ("q1", "x") -> ("q2", "x", 1)
+                          (*searching for first b*)
+                          | ("q1", "b") -> ("q2", "x", 1)
+                          | ("q1", "_") -> ("acc", "_", 1)
+                          | ("q1", "x") -> ("q1", "x", 1)
 
-  (*if starts with c*)
-  | ("q2", "c") -> ("q2", "c", 1)
-  | ("q2", "d") -> ("q2", "d", 1)
-  | ("q2", "x") -> ("acc", "x", 1)
-  | ("q2", "_") -> ("q3", "_", 0)
-
-  (*@ end of tape*)
-  | ("q3", "_") -> ("q4", "_", 0)
-
-  (*skip over already x'd out c's*)
-  | ("q3", "x") -> ("q3", "x", 0)
-
-  (*x out last c*)
-  | ("q3", "c") -> ("q4", "x", 0)
-
-  (*rewind to beginning of tape*)
-  | ("q4", "c") -> ("q4", "c", 0)
-  | ("q4", "d") -> ("q4", "d", 0)
-  | ("q4", "x") -> ("q4", "x", 0)
-  | ("q4", ">") -> ("q1", ">", 1)
-
-  (*if starts with d*)
-  | ("q5", "c") -> ("q5", "c", 1)
-  | ("q5", "d") -> ("q5", "d", 1)
-  | ("q5", "x") -> ("q6", "x", 1)
-  | ("q5", "_") -> ("q6", "_", 1)
-
-  | ("q6", "d") -> ("q7", "x", 0)
-  | ("q6", "x") -> ("q6", "x", 0)
-
-  (*rewind to beginning of tape*)
-  | ("q7", "c") -> ("q7", "c", 0)
-  | ("q7", "d") -> ("q7", "d", 0)
-  | ("q7", "x") -> ("q1", "x", 0)
-
-  (*if state is accept then stay there*)
-  | ("acc", "c") -> ("acc", "a", 1)
-  | ("acc", "d") -> ("acc", "b", 1)
-  | ("acc", ">") -> ("acc", ">", 1)
-  | ("acc", "_") -> ("acc", "_", 1)
-  | ("acc", "x") -> ("acc", "x", 1)
-
-  (*wildcard*)
-  | (_,c) -> ("rej", c,1)
-  )};;
+                          (*skip over other b's and x's*)
+                          | ("q2", "b") -> ("q2", "b", 1)
+                          | ("q2", "x") -> ("q2", "x", 1)
 
 
-  (* tm_q2_b tests *)
-  (**
+                          (*find three consecutive a's*)
+                          | ("q2", "a") -> ("q3", "x", 1)
+                          | ("q3", "a") -> ("q4", "x", 1)
+                          | ("q4", "a") -> ("q5", "x", 1)
+
+                          (*skip other a's*)
+                          | ("q5", "a") -> ("q5", "a", 1)
+
+                          (*@ end of tape*)
+                          | ("q5", "_") -> ("q6", "_", 0)
+
+
+                          (*rewind to beginning of tape*)
+                          | ("q6", "a") -> ("q6", "a", 0)
+                          | ("q6", "b") -> ("q6", "b", 0)
+                          | ("q6", "x") -> ("q6", "x", 0)
+
+                          (*restart process*)
+                          | ("q6", ">") -> ("q1", ">", 1)
+
+                          (*if state is accept then stay there*)
+                          | ("acc", "a") -> ("acc", "a", 1)
+                          | ("acc", "b") -> ("acc", "b", 1)
+                          | ("acc", ">") -> ("acc", ">", 1)
+                          | ("acc", "_") -> ("acc", "_", 1)
+                          | ("acc", "x") -> ("acc", "x", 1)
+
+                          (*wildcard*)
+                          | (_,c) -> ("rej", c,1)
+                        )};;
+
+
+(* tm_q2_b tests *)
+(**
   run tm_q2_b "";;
-  run tm_q2_b "ccdd";;
-  run tm_q2_b "ccddcc";;
-  run tm_q2_b "cdc";;
-  **)
+  run tm_q2_b "baaa";;
+  run tm_q2_b "bbaaaaaa";;
+  run tm_q2_b "bbbaaaaaaaaa";;
+  run tm_q2_b "b";;
+  run tm_q2_b "ba";;
+  run tm_q2_b "baa";;
+  run tm_q2_b "baaaa";;
+  run tm_q2_b "bbaaaaaaa";;
+  run tm_q2_b "aaa";;
+  run tm_q2_b "abbb";;
+ **)
 
 
 
-  (* QUESTION 3 *)
+(* QUESTION 3 *)
 
 
-  let binaryAddition = { states = ["x"];
-  input_alphabet = ["x"];
-  tape_alphabet = ["x"];
-  blank = "x";
-  left_marker = "x";
-  start = "x";
-  accept = "x";
-  reject = "x";
-  delta = (fun (x,y) -> (x,y,0))}
+let binaryAddition = { states = ["x"];
+                       input_alphabet = ["x"];
+                       tape_alphabet = ["x"];
+                       blank = "x";
+                       left_marker = "x";
+                       start = "x";
+                       accept = "x";
+                       reject = "x";
+                       delta = (fun (x,y) -> (x,y,0))}
 

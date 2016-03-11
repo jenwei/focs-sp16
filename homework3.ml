@@ -111,7 +111,7 @@ let nfaLastThreeB = {
 
 
 let rec findTransitionsHelper (d,q,a) = 
-  (*go through the deltas and add to list if transitions from q and labeled a*)
+  (*go through the deltas and add to list if transitions from state q and labeled a*)
   match d with
     | [] -> []
     | (x,y,z)::t -> if (x=q && y=a) then (x,y,z)::findTransitionsHelper (t,q,a) 
@@ -477,12 +477,12 @@ let acceptNFA (fa,input) =
 
 (* acceptNFA tests *)
 (**
-  acceptNFA (dfaThreeA,"babab");;
-  acceptNFA (dfaThreeA,"bababa");;
-  acceptNFA (dfaThreeA,"bababab");;
-  acceptNFA (nfaLastThreeB,"abb");;
-  acceptNFA (nfaLastThreeB,"abbb");;
-  langNFA (nfaLastThreeB,7);;
+   acceptNFA (dfaThreeA,"babab");;
+   acceptNFA (dfaThreeA,"bababa");;
+   acceptNFA (dfaThreeA,"bababab");;
+   acceptNFA (nfaLastThreeB,"abb");;
+   acceptNFA (nfaLastThreeB,"abbb");;
+   langNFA (nfaLastThreeB,7);;
  **)
 
 (* 

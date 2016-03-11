@@ -96,7 +96,7 @@ let printConfig m config value =
 
 (* QUESTION 1 *)
 
-
+(* yields the starting config for TM m with w as input string*)
 let startConfig m w = {
   state = m.start;
   before = [];
@@ -280,7 +280,6 @@ let step m config =
         before = cb @ [b] (*take the old before and append [b] to it*);
         after = stepHelperAfter m config.after
       };
-
 ;;
 
 

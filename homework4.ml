@@ -202,6 +202,7 @@ let at_least n p xs =
  **)
 
 
+(* returns max positive el in list if one exists 0 otherwise *)
 let max_positive xs =  List.fold_right (fun h acc -> if (h>acc) then h else acc) xs 0;;
 
 (* max_positive tests *)
@@ -229,6 +230,7 @@ map_funs [(fun x -> x * 2); (fun x -> x * x)] 10;;
 map_funs [(fun x -> "+"^x); (fun x -> "-"^x)] "hello";;
 
 
+(* returns all the results of applying a function in fs to a value in xs *)
 let map_cross fs xs = List.fold_right (fun h acc -> (map_funs fs h) @ acc) xs [];;
 
 (* map cross tests *)

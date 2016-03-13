@@ -7,6 +7,10 @@ Name: Jennifer Wei
 Email: jennifer.wei@students.olin.edu
 
 Remarks, if any:
+- Got help from Kyle, Sophie, and Dennis about how transformDelta works (it was difficult to wrap my mind around the whole transformDelta returns a function for some reason) but Sophie helped clarify by showing me how to explicitly show that using 'let transformDelta states delta f = fun (a,b) ->'
+- Got help from Kyle with Q3 - still a bit confused about structured states - and spent a while working on the last problem mainly because I wasn't sure how to represent structured states in the TM (and also because I think my brain was ready to go on spring break)
+- The interface I've been using (ocaml-top) has the unfortunate feature where a warning in the console prevents the results from being printed, so unfortunately debugging took a lot longer as I had to keep copy and pasting code between ocaml-top and an online compiler (codepad) :(
+- Spent 2 hours debugging permutations - works for the test cases provided, but I made the TM more complicated than it needed to be, so I could imagine there being some bug/edge case not accounted for, so sorry in advance about that.
 
 *)
 
@@ -181,41 +185,94 @@ let rec range n =
 
 (* range tests *)
 (**
-  range (-1);;
-  range 0;;
-  range 3;;
-  range 17;;
+   range (-1);;
+   range 0;;
+   range 3;;
+   range 17;;
  **)
 
 
 
 (* QUESTION 2 *)
+let trans (x,y) = x^"/"^(string_of_int y);;
 
-
-let transformStates states f = failwith "transformStates not implemented";;
-
+(* returns the result of applying transformation f to every state in states *)
+let transformStates states f = 
+  List.map f states;;
 
 (* transformStates tests *)
-transformStates [] trans;;
-transformStates [("a",1);("b",2);("c",3)] trans;;
+(**
+   transformStates [] trans;;
+   transformStates [("a",1);("b",2);("c",3)] trans;;
+ **)
 
 
 
-let find_original states f target = failwith "find_original not implemented";;
+(* returns the state s in states for which (f s) is a target *)
+let rec find_original states f target = 
+  match states with 
+    | [] -> failwith "cannot find original value"
+    (* ts is a single transformed state *)
+    | s::rest -> let ts = f (s) in 
+          if ts = target then s else find_original rest f target
+;;
 
 (* find_original tests *)
-find_original [("a",1);("b",2);("c",3)] trans "a/1";;
-find_original [("a",1);("b",2);("c",3)] trans "b/2";;
-find_original [("a",1);("b",2);("c",3)] trans "c/3";;
-find_original [("a",1);("b",2);("c",3)] trans "d/3";;
+(** 
+   find_original [("a",1);("b",2);("c",3)] trans "a/1";; (* ("a", 1) *)
+   find_original [("a",1);("b",2);("c",3)] trans "b/2";;
+   find_original [("a",1);("b",2);("c",3)] trans "c/3";;
+   find_original [("a",1);("b",2);("c",3)] trans "d/3";;
+ **) 
 
 
 
-let transformDelta states delta f = failwith "transformDelta not implemented";;
+let transformDelta states delta f = fun (a,b) -> 
+  (* find original form of input *)
+  let oform = find_original states f a in
+  (* run input through original delta *)
+  let dout = delta (oform, b) in
+    (* apply transformation f before outputting it *)
+    match dout with 
+      | (q,b,d) -> ((f q),b,d)
+;;
+
+(* transformDelta test *)
+(** 
+   let trans (x,y) = x^"/"^(string_of_int y);;
+
+   let delta x = match x with
+   | (("a",1),"0") -> (("b",2),"0",0)
+   | (("a",1),"1") -> (("c",3),"1",0)
+   | (("b",2),"0") -> (("c",3),"0",0)
+   | (("b",2),"1") -> (("a",1),"1",0)
+   | (("c",3),"0") -> (("a",1),"0",1)
+   | (("c",3),"1") -> (("b",2),"1",1)
+   | (_,sym) -> (("a",1),sym,1)  ;;
+
+   delta(("a",1),"0");;
+   delta(("b",2),"0");;
+   delta(("c",3),"0");;
+
+   let new_delta = transformDelta [("a",1);("b",2);("c",3)] delta trans;;
+
+   new_delta("a/1","0");; (*("b/2", "0", 0)*)
+ **)
 
 
 
-let transform m f = failwith "transform not implemented";;
+(* cut and pasted template from above and commented changes! *) 
+let transform m f = {
+  states = transformStates m.states f; (* transform the state *)
+  input_alphabet = m.input_alphabet;
+  tape_alphabet = m.tape_alphabet; 
+  left_marker = m.left_marker;
+  blank = m.blank; 
+  delta = transformDelta m.states m.delta f; (* transform the delta *)
+  start = f m.start;  (* apply function to var *)
+  accept = f m.accept; (* apply function to var *)
+  reject = f m.reject (* apply function to var *)
+};;
 
 
 
@@ -344,19 +401,113 @@ let add1 =
 
 (* QUESTION 3 *)
 
+
+(* code from http://stackoverflow.com/questions/10413930/using-fold-left-to-search-for-an-element-in-ocaml *) 
+let exists k l = 
+  List.fold_left (fun b x -> b || x = k) false l
+;;
+
 (* a *)
-let permutation = 
-  { states = ["x"];
-    input_alphabet = ["x"];
-    tape_alphabet = ["x"];
-    start = "x";
-    accept = "x";
-    reject = "x";
-    blank = "x";
-    left_marker = "x";
-    delta = (fun x -> ("x","x",0)) }
+let permutationTM = 
+  let alphabet = (explode "abcdefghijklmnopqrstuvwxyz") in 
+    { states = pairs ["start";"checkU";"checkV";"checkNoU";"checkNoU_V";"rev";"crossU";"skipU";"crossV";"revV";"revU";"revVDone";"revUDone";"acc";"rej";"finalSweep"] ((explode ">_X#")@alphabet);
+      input_alphabet = "#"::alphabet;
+      tape_alphabet = (explode ">_X#abcdefghijklmnopqrstuvwxyz");
+      start = ("start",">");
+      accept = ("acc","X");
+      reject = ("rej","X");
+      blank = "_";
+      left_marker = ">";
+      delta = (fun x -> 
+                match x with
+                  (* scan through string to make sure it has the right shape *)
+                  | (("start",">"),">") -> (("checkNoU",">"),">",1)
+                  | (("checkNoU",">"),"#") -> (("checkNoU_V",">"),"#",1)
+                  | (("checkNoU",">"),letter) -> if (exists letter alphabet) then (("checkU",">"),letter,1) else (("rej","X"),letter,1)
+                  | (("checkU",">"),"#") -> (("checkV",">"),"#",1)
+                  | (("checkU",">"),letter) -> if (exists letter alphabet) then (("checkU",">"),letter,1) else (("rej","X"),letter,0)
+
+                  | (("checkNoU_V",">"),"_") -> (("acc","X"),"_",0)
+                  | (("checkNoU_V",">"),letter) -> (("rej","X"),"_",0)
+
+                  | (("checkV",">"),"_") -> (("rev",">"),"_",0)
+                  | (("checkV",">"),letter) -> if (exists letter alphabet) then (("checkV",">"),letter,1) else (("rej","X"),letter,1)
+
+                  (* reverse to beginning of string *)
+                  | (("rev",sym),">") -> (("crossU",sym),">",1)
+                  | (("rev",sym),letter) -> (("rev",sym),letter,0)
+
+
+                  (* cross out first letter, save that to the tuple *)
+                  | (("crossU",sym),"X") -> (("crossU",sym),"X",1)
+                  | (("crossU",sym),"#") -> (("crossV",sym),"#",1)
+                  | (("crossU",sym),letter) -> (("skipU",letter),"X",1)
+
+                  (* skip to V *)
+                  | (("skipU",sym),"#") -> (("crossV",sym),"#",1)
+                  | (("skipU",sym),letter) -> (("skipU",sym),letter,1)
+
+                  (* cross out corresponding letter in V *)
+                  | (("crossV",sym),"X") -> (("crossV",sym),"X",1)
+                  | (("crossV",sym),"#") -> (("rej","X"),"#",1)
+                  | (("crossV",sym),"_") -> (("rej","X"),"_",0)
+                  | (("crossV",sym),letter) -> if letter = sym then (("revVDone","X"),"X",0) else (("crossV",sym),letter,1)
+
+                  (* go back and check for Xs along the way of V *) 
+                  | (("revV",sym),"#") -> (("revU",sym),"#",0)
+                  | (("revV",sym),letter) -> (("revV",sym),letter,0)
+
+                  | (("revVDone",sym),"#") -> (("revUDone",sym),"#",0)
+                  | (("revVDone",sym),letter) -> if letter = "X" then (("revVDone",sym),letter,0) else (("revV",sym),letter,0)
+
+                  (* go back and check for Xs along the way of U *) 
+                  | (("revU",sym),">") -> (("crossU",sym),">",1)
+                  | (("revU",sym),letter) -> (("revU",sym),letter,0)
+
+                  | (("revUDone",sym),">") -> (("finalSweep","X"),">",1)
+                  | (("revUDone",sym),letter) -> if letter = "X" then (("revUDone",sym),letter,0) else (("revU",sym),letter,0)
+
+                  (* final sweep to check that the whole string only contains Xs, #, >, _ *)
+                  | (("finalSweep",sym),"_") -> (("acc","X"),"_",0)
+                  | (("finalSweep",sym),letter) -> if exists letter (explode "X#>") then (("finalSweep",sym),letter,1) else (("rej","X"),letter,0)
+
+                  (* wildcard *)
+                  | (_,sym) -> (("rej","X"), sym, 1)
+                  | (("", _), _) -> (("rej","X"), "X", 1)
+              )
+    };;
+
+(* copied (and modified) from example *) 
+let permutation = transform permutationTM (fun (x,y) -> x^"|"^y);;
+
+(* permutation test *)
+(**
+(*acc*)
+run permutation "#";;
+run permutation "a#a";;
+run permutation "obb#bob";;
+run permutation "germany#mnayrge";;
+(*rej*)
+run permutation "a#";;
+run permutation "#a";;
+run permutation "aaa#aaaa";;
+run permutation "a#a#aa";;
+run permutation "hello";;
+run permutation "ε";;
+**) 
 
 
 
 (* b *)
-let copies n = failwith "copies not implemented yet"
+let copies n = 
+  let alphabet = (explode "abcdefghijklmnopqrstuvwxyz") in 
+    { states = pairs ["start";"checkU";"checkV";"checkNoU";"checkNoU_V";"rev";"crossU";"skipU";"crossV";"revV";"revU";"revVDone";"revUDone";"acc";"rej";"finalSweep"] ((explode ">_X#")@alphabet);
+      input_alphabet = "#"::alphabet;
+      tape_alphabet = (explode ">_X#abcdefghijklmnopqrstuvwxyz");
+      start = ("start",">");
+      accept = ("acc","X");
+      reject = ("rej","X");
+      blank = "_";
+      left_marker = ">";
+      delta = (fun x -> 
+                match x with )};;

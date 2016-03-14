@@ -11,8 +11,7 @@ Remarks, if any:
 - Got help from Kyle with Q3 - still a bit confused about structured states - and spent a while working on the last problem mainly because I wasn't sure how to represent structured states in the TM (and also because I think my brain was ready to go on spring break)
 - Spent 2+ hours debugging 'permutations' - works for the test cases provided, but I made the TM more complicated than it needed to be, so I could imagine there being some bug/edge case not accounted for, so sorry in advance about that.
 - For 'copies' - shouldn't it not accept ε since it's not in {0,1}?
-- Received help with 'copies' - switched the value checkers (the second variable of the tuple) to simplify things (spent an embarrassing amount of time debugging - a lot of syntax errors 
-
+- Received help with 'copies' - switched the value checkers (the second variable of the tuple) to simplify things (spent an embarrassing amount of time debugging - a lot of syntax errors)
 - The interface I've been using (ocaml-top) has the unfortunate feature where a warning in the console prevents the results from being printed, so unfortunately debugging took a lot longer as I had to keep copy and pasting code between ocaml-top and an online compiler (codepad) :(
 
 *)

@@ -9,10 +9,11 @@ Email: jennifer.wei@students.olin.edu
 Remarks, if any:
 - Got help from Kyle, Sophie, and Dennis about how transformDelta works (it was difficult to wrap my mind around the whole transformDelta returns a function for some reason) but Sophie helped clarify by showing me how to explicitly show that using 'let transformDelta states delta f = fun (a,b) ->'
 - Got help from Kyle with Q3 - still a bit confused about structured states - and spent a while working on the last problem mainly because I wasn't sure how to represent structured states in the TM (and also because I think my brain was ready to go on spring break)
-- The interface I've been using (ocaml-top) has the unfortunate feature where a warning in the console prevents the results from being printed, so unfortunately debugging took a lot longer as I had to keep copy and pasting code between ocaml-top and an online compiler (codepad) :(
 - Spent 2+ hours debugging 'permutations' - works for the test cases provided, but I made the TM more complicated than it needed to be, so I could imagine there being some bug/edge case not accounted for, so sorry in advance about that.
 - For 'copies' - shouldn't it not accept ε since it's not in {0,1}?
-- Received help with 'copies' - switched the value checkers (the second variable of the tuple) to simplify things (spent 6+ hrs debugging :( . . .)
+- Received help with 'copies' - switched the value checkers (the second variable of the tuple) to simplify things (spent an embarrassing amount of time debugging - a lot of syntax errors 
+
+- The interface I've been using (ocaml-top) has the unfortunate feature where a warning in the console prevents the results from being printed, so unfortunately debugging took a lot longer as I had to keep copy and pasting code between ocaml-top and an online compiler (codepad) :(
 
 *)
 
@@ -439,7 +440,6 @@ match x with
 | (("rev",sym),">") -> (("crossU",sym),">",1)
 | (("rev",sym),letter) -> (("rev",sym),letter,0)
 
-
 (* cross out first letter, save that to the tuple *)
 | (("crossU",sym),"X") -> (("crossU",sym),"X",1)
 | (("crossU",sym),"#") -> (("crossV",sym),"#",1)
@@ -507,7 +507,7 @@ if n <= 0 then failwith "n cannot be less than 1 (select an n where n>0)"
 else 
 let explodeN = range n in
 (* states = triple of state, copyVal, and currentN*)
-{ states = triples ["start";"acc";"rej";"confirm";"rewind";"checkBeginning";"check#";"find";"crossOff";"skip";"finalRewind";"copyBeginning";"rewind2"] ["-1";"0";"1"] explodeN;
+{ states = triples ["start";"acc";"rej";"confirm";"rewind";"checkBeginning";"check#";"checkX";"findBack";"crossOff";"move";"nextCopy";"nextBack";"crossOff2"] ["-1";"0";"1"] explodeN;
 input_alphabet = ["0";"1"];
 tape_alphabet = (explode ">_X#01");
 start = ("start","-1",0);
@@ -523,9 +523,9 @@ match x with
 | (("confirm","-1",count),"0") -> (("confirm","-1",count),"0",1)
 | (("confirm","-1",count),"1") -> (("confirm","-1",count),"1",1)
   (* update counter if # *)
-| (("confirm","-1",count),"#") -> if count = n then (("rej","-1",0),"#",1) else (("confirm",-1,count+1),"#",1) 
-| (("confirm","-1",count),"_") -> if  n = 1 then (("acc","-1",0),"_",0) else 
-if count = (n-1) then (("rewind","-1",count),"_",0) else (("rej","-1",0),"_",0) 
+| (("confirm","-1",count),"#") -> if count = n then (("rej","-1",0),"#",1) else (("confirm","-1",count+1),"#",1) 
+| (("confirm","-1",count),"_") -> if  count = (n-1) then if n = 1 then (("acc","-1",0),"_",0) else 
+(("rewind","-1",count),"_",0) else (("rej","-1",0),"_",0) 
 | (("confirm","-1",count),sym) -> (("rej","-1",0),sym,1)
 
 (* rewind to beginning and reset count *) 
@@ -538,29 +538,37 @@ if count = (n-1) then (("rewind","-1",count),"_",0) else (("rej","-1",0),"_",0)
 | (("check#",v,count),"_") -> (("acc","-1",0),"_",0)
 | (("check#",v,count),sym) -> (("rej","-1",0),sym,0)
 
+(* check for Xs *)
+| (("checkBeginning",v,count),"X") -> (("checkX",v,count),"X",1)
+| (("checkX",v,count),"X") -> (("checkX",v,count),"X",1)
+| (("checkX",v,count),"#") -> (("checkX",v,count),"#",1)
+| (("checkX",v,count),"_") -> (("acc","-1",0),"_",0)
+| (("checkX",v,count),sym) -> (("rej","-1",0),sym,0)
+
 (* otherwise *)
-| (("checkBeginning",v,count),"X") -> (("checkBeginning",v,count),"X",1)
-| (("checkBeginning",v,count),value) -> (("find",v,count),value,1)
+| (("checkBeginning",v,count),value) -> (("findBack",v,count),value,1)
 
-(* find symbol*)
-| (("find",value,count),"#") -> (("crossOff",value,count),"#",1)
-| (("find",value,count),"_") -> if count = n then (("rewind2",">",count),"_",0) else (("rej",">",n),"_",0)
-| (("find",value,count),sym) -> (("next",value,count),sym,1)
+(* find back of copy and reverse direction to find first symbol to left of X or # *)
+| (("findBack",value,count),"#") -> (("crossOff",value,count),"#",0)
+| (("findBack",value,count),"X") -> (("crossOff",value,count),"X",0)
+| (("findBack",value,count),sym) -> (("findBack",value,count),sym,1)
 
-(* check that copy_beginning matches val *)
-| (("copy_beginning",value,count), "X") -> (("copy_beginning",value,count),"X",1)
-| (("copy_beginning",value,count), sym) -> if sym = value then (("next",value,count+1),"X",1) else (("rej",">",n),sym,1)
+(* X out the symbol and save it as v *)
+| (("crossOff",v,c),sym) -> (("move",sym,c+1),"X",1)
 
-(* rewind2 to beginning *) 
-| (("rewind2",value,count),">") -> (("copy_beginning",value,count),">",1)
-| (("rewind2",value,count),num) -> (("rewind2",value,count),num,0)
+(* move onto the next copy in the string *) 
+| (("move",v,c),"#") -> (("nextBack",v,c),"#",1)
+| (("move",v,c),sym) -> (("move",v,c),sym,1)
 
-(* final rewind - check if all values passed are Xs or #s *)
-| (("final_rewind",value,count),"#") -> (("final_rewind",value,count),"#",0)
-| (("final_rewind",value,count),"X") -> (("final_rewind",value,count),"X",0)
-| (("final_rewind",value,count),">") -> (("acc",value,count),">",1)
-| (("final_rewind",value,count),sym) -> (("rewind2",value,count),sym,0)
+(* find next back *)
+| (("nextBack",value,count), "X") -> (("crossOff2",value,count),"X",0)
+| (("nextBack",value,count), "#") -> (("crossOff2",value,count),"#",0)
+| (("nextBack",value,count), "_") -> (("crossOff2",value,count),"_",0)
+| (("nextBack",value,count), sym) -> (("nextBack",value,count),sym,1)
 
+(* check that a symbol exists, matches v, and crosses symbol out - otherwise reject - if at end then rewind - otherwise look for end, cross it out, and continue *)
+| (("crossOff2",v,c),"#") -> (("rej","-1",0),"#",1)
+| (("crossOff2",v,c),sym) -> if sym = v then if c = (n-1) then (("rewind","-1",0),"X",0) else (("move",v,c+1),"X",1) else (("rej","-1",0),sym,0)
 
 (* wildcard *)
 | (("*",_,_),_) -> (("rej","0",n),"X",0)
@@ -570,7 +578,9 @@ if count = (n-1) then (("rewind","-1",count),"_",0) else (("rej","-1",0),"_",0)
 
 let copies n = transform (copiesTM n) (fun (x,y,z) -> x^"|"^y^"|"^(string_of_int z));;
 
+
 (* copies test *)
+(** 
 (*acc*)
 run (copies 1) "1000";;
 run (copies 1) "0101010101";;
@@ -585,5 +595,5 @@ run (copies 3) "#";;
 run (copies 3) "###";;
 run (copies 3) "0#0";;
 run (copies 3) "10#10#10#10";;
-
+**) 
 

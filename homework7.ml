@@ -7,6 +7,10 @@ Name: Jennifer Wei
 Email: jennifer.wei@students.olin.edu
 
 Remarks, if any:
+- is there a good way for debugging grammar? for this assignment, I 
+would trace through the rules once I saw a 'false', but is there a better 
+way to debug?
+- for eqnum "dedeeeeddd", it seems like it'd work if given a large depth/width? 
 
 *)
 
@@ -234,42 +238,103 @@ let palindromes = {
 };;
 
 (** test palindromes **)
+(*
 generate 10 palindromes "aba";;
 generate 10 palindromes "aa";;
 generate 10 palindromes "abba";;
 generate 10 palindromes "abcacba";;
+*)
 
 
 let ambncmn = {
-  nonterminals = [];
-  terminals = [];
-  rules = [];
-  startsym = ""
-} 
+  nonterminals = ["S";"T"];
+  terminals = ["a";"b";"c"];
+  rules = [
+  	("S","");
+  	("S","aSc");
+  	("S","T");
+  	("T","bTc");
+  	("T","S");
+  	("T","")
+  ];
+  startsym = "S"
+};;
+
+(** test ambncmn **)
+(*
+generate 10 ambncmn "aabbcccc";;
+generate 20 ambncmn "aabbbccccc";;
+generate 10 ambncmn "abcc";;
+generate 20 ambncmn "aaabbccccc";;
+*)
 
 
 let amcmnbn = { 
-  nonterminals = [];
-  terminals = [];
-  rules = [];
-  startsym = ""
-} 
+  nonterminals = ["S";"T"];
+  terminals = ["a";"b";"c"];
+  rules = [
+  	("S","");
+  	("S","aScT");
+  	("T","cTb");
+  	("T","")
+  ];
+  startsym = "S"
+};;
+
+(** test amcmnbn **)
+(* 
+generate 20 amcmnbn "accb";;
+generate 20 amcmnbn "aacccb";;
+generate 20 amcmnbn "acccbb";;
+generate 20 amcmnbn "aaccccbb";;
+generate 20 amcmnbn "acb";; // false
+*)
 
 
 let ambncm = {
-  nonterminals = [];
-  terminals = [];
-  rules = [];
-  startsym = ""
-} 
+  nonterminals = ["S";"T"];
+  terminals = ["a";"b";"c"];
+  rules = [
+  	("S","");
+  	("S","aSc");
+  	("S","T");
+  	("T","bT");
+  	("T","S");
+  	("T","")
+  ];
+  startsym = "S"
+};;
+
+(** test ambncm **)
+(*
+generate 20 ambncm "aaabccc";;
+generate 20 ambncm "aaabbccc";;
+generate 20 ambncm "aabcc";;
+generate 20 ambncm "aaabccc";;
+generate 20 ambncm "aabbc";;
+*)
 
 
 let eqnum = {
-  nonterminals = [];
-  terminals = [];
-  rules = [];
-  startsym = ""
-} 
+  nonterminals = ["S"];
+  terminals = ["d";"e"];
+  rules = [
+  	("S","");
+  	("S","dSe");
+  	("S","eSd")
+  ];
+  startsym = "S"
+};;
+
+(** test eqnum **)
+(*
+generate 20 eqnum "eedd";;
+generate 20 eqnum "eded";;
+generate 20 eqnum "ddee";;
+generate 20 eqnum "dedede";;
+generate 40 eqnum "eedded";;
+generate 20 eqnum "dededed";; (*false*)
+*)
 
 
 

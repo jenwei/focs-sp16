@@ -11,6 +11,8 @@ would trace through the rules once I saw a 'false', but is there a better
 way to debug?
 - got help from Sidd about account for some other rules/cases for Q1
 - got help from Dennis about how to approach powers2 using the "photons" approach
+- got help from Sidd and Dennis about to approach Q2
+- took forever to debug Q2 (got an error where the )
 *)
 
 
@@ -373,31 +375,36 @@ let dfaThreeA = {
   accepting = ["S"]
 } 
 
-let dfaHelper dfa  = failwith ("not implemented")
-;;
+(*taken from HW4*)
+(* goes through all the xs using fold_right and uses map to create the pairs for each x and the ys, appending all the results into a final array*)
+let all_pairings xs ys = List.fold_right (fun h acc -> ((List.map (fun y -> (h,y)) ys) @ acc)) xs [];;
+
+(*gets all tuples, feeds them into delta, creates a list of new rules based off tuples (inputs) and delta output (results) and also appends the accepting state pairs*)
+let dfaHelper dfa  = 
+	let pairs = (all_pairings dfa.states dfa.alphabet) in 
+		let all_pairs = 
+			(List.map (fun (q,a) -> 
+				let delta = dfa.delta q a in 
+					(q,(Char.escaped a)^delta)
+			)) pairs in 
+			all_pairs @ (List.map (fun x -> (x, "")) dfa.accepting);;
+
 
 let dfaGrammar dfa = { 
   nonterminals = dfa.states;
   terminals = List.map Char.escaped dfa.alphabet;
   rules = dfaHelper dfa;
-  (*
-  // get tuples
-  // feed into delta
-  // create list of new rules based off tuples (inputs) and result (delta output)
-  *)
   startsym = dfa.start
 };;
 
-(*
-FOR EASY REFERENCE
-type grammar = {
-  nonterminals: string list;
-  terminals: string list;
-  rules: (string * string) list;
-  startsym : string
-}
-*)
 
+(** test dfaGrammar **)
+(*
+generate 10 (dfaGrammar dfaThreeA) "aaa";;
+generate 10 (dfaGrammar dfaThreeA) "aa";;
+generate 10 (dfaGrammar dfaThreeA) "b";;
+generate 20 (dfaGrammar dfaThreeA) "ababbaaaba";;
+*)
 
 
 (*

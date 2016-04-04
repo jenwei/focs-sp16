@@ -1,5 +1,4 @@
-(* 
-
+(*
 HOMEWORK 7
 
 Name: Jennifer Wei
@@ -10,8 +9,8 @@ Remarks, if any:
 - is there a good way for debugging grammar? for this assignment, I 
 would trace through the rules once I saw a 'false', but is there a better 
 way to debug?
-- for eqnum "dedeeeeddd", it seems like it'd work if given a large depth/width? 
-
+- got help from Sidd about account for some other rules/cases for Q1
+- got help from Dennis about how to approach powers2 using the "photons" approach
 *)
 
 
@@ -321,7 +320,9 @@ let eqnum = {
   rules = [
   	("S","");
   	("S","dSe");
-  	("S","eSd")
+  	("S","eSd");
+  	("S","dSeSeSd");
+  	("S","eSdSdSe")
   ];
   startsym = "S"
 };;
@@ -333,6 +334,7 @@ generate 20 eqnum "eded";;
 generate 20 eqnum "ddee";;
 generate 20 eqnum "dedede";;
 generate 40 eqnum "eedded";;
+generate 40 eqnum "deed";;
 generate 20 eqnum "dededed";; (*false*)
 *)
 
@@ -371,9 +373,30 @@ let dfaThreeA = {
   accepting = ["S"]
 } 
 
+let dfaHelper dfa  = failwith ("not implemented")
+;;
 
+let dfaGrammar dfa = { 
+  nonterminals = dfa.states;
+  terminals = List.map Char.escaped dfa.alphabet;
+  rules = dfaHelper dfa;
+  (*
+  // get tuples
+  // feed into delta
+  // create list of new rules based off tuples (inputs) and result (delta output)
+  *)
+  startsym = dfa.start
+};;
 
-let dfaGrammar dfa = failwith "dfaGrammar not implemented"
+(*
+FOR EASY REFERENCE
+type grammar = {
+  nonterminals: string list;
+  terminals: string list;
+  rules: (string * string) list;
+  startsym : string
+}
+*)
 
 
 
@@ -384,16 +407,92 @@ let dfaGrammar dfa = failwith "dfaGrammar not implemented"
 
 
 let addition = {
-  nonterminals = [];
-  terminals = [];
-  rules = [];
-  startsym = ""
-} 
+  nonterminals = ["S";"T";"U"];
+  terminals = ["+";"=";"x"];
+  rules = [
+  	("S","");
+  	("S","+T");
+  	("S","xSx");
+  	("T","=");
+  	("T","xTx");
+  	("T","")
+  ];
+  startsym = "S"
+};; 
+
+(** test addition **)
+(*
+generate 10 addition "x+x=xx";;
+generate 10 addition "x+xx=xxx";;
+generate 15 addition "xxx+xx=xxxxx";;
+generate 10 addition "+=";;
+*)
+
+(* 
+Sequence of rewrites for "x+x=xx"
+   S
+-> xSx
+-> x+Tx
+-> x+xTxx
+-> x+x=xx
+
+Sequence of rewrites for "x+xx=xxx"
+   S
+-> xSx
+-> x+Tx
+-> x+xTxx
+-> x+xxTxxx
+-> x+xx=xxx
+*)
 
 
 let powers2 = {
-  nonterminals = [];
-  terminals = [];
-  rules = [];
-  startsym = ""
-} 
+  nonterminals = ["S";">";"P";"_"];
+  terminals = ["a"];
+  rules = [
+  	("S",">a_");
+  	(">a",">aaP");
+  	("Pa","aaP");
+  	("P_", "_");
+  	(">","");
+  	("_","")
+  ];
+  startsym = "S"
+};;
+
+(** test powers2 **)
+(*
+generate 10 powers2 "aaaa";;
+generate 30 powers2 "aaaaaaaa";;
+generate 10 powers2 "aaa";; (*false*)
+*)
+
+(* 
+Sequence of rewrites for "aaaa"
+   S
+-> >a_
+-> >aaP_
+-> >aaPaP_
+-> aaPaP_
+-> aaaaPP_
+-> aaaaP_
+-> aaaa_
+-> aaaa
+
+
+Sequence of rewrites for "aaaaaaaa"
+   S
+-> >a_
+-> >aaP_
+-> >aaPaP_
+-> >aaPaPaP_
+-> aaPaPaP_
+-> aaaaPPaP_
+-> aaaaPaaPP_
+-> aaaaaaPaPP_
+-> aaaaaaaaPPP_
+-> aaaaaaaaPP_
+-> aaaaaaaaP_
+-> aaaaaaaa_
+-> aaaaaaaa
+*)

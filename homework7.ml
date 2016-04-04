@@ -12,7 +12,8 @@ way to debug?
 - got help from Sidd about account for some other rules/cases for Q1
 - got help from Dennis about how to approach powers2 using the "photons" approach
 - got help from Sidd and Dennis about to approach Q2
-- took forever to debug Q2 (got an error where the )
+- took forever to debug Q2 (got an error of some sort regarding strings being 
+  intepreted as bytes and resolved that, but don't think that ended up being the issue)
 *)
 
 

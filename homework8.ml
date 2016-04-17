@@ -306,23 +306,61 @@ let default_defs = [ ("true","/x./y.x");
 *
 *)
 
-let minus = ("minus","/m./n.n pred m") (* this one was given to us *)
+let minus = ("minus","/m./n.n pred m") (* this one was given to us *);;
 
-let geq = ("geq","/m./n.n pred m")
+let geq = ("geq","/m./n.iszero (minus n m)") (* adapted this from the reading you gave us *);;
 
-let eq = ("eq","not_implemented")
+(*
+simplify q1_defs "geq _0 _0";;
+simplify q1_defs "geq _1 _0";;
+simplify q1_defs "geq _1 _3";;
+simplify q1_defs "geq _1 (plus _1 _1)";;
+*)
 
-let pair = ("pair","not_implemented")
+let eq = ("eq","/m./n.and (geq m n) (geq n m)") (* adapted this from the reading you gave us *);;
 
-let match_pair = ("match_pair","not_implemented")
+(*
+simplify q1_defs "eq _0 _0";;
+simplify q1_defs "eq _2 _2";;
+simplify q1_defs "eq _0 _2";;
+simplify q1_defs "eq _3 _2";;
+*)
 
-let fst = ("fst","not_implemented")
+let pair = ("pair","/m./n./p.p m n") (* adapted this from the reading you gave us *);;
 
-let snd = ("snd","not_implemented")
+let match_pair = ("match_pair","/pair./f.pair f");;
 
-let update_fst = ("update_fst","not_implemented")
+(*
+simplify q1_defs "match_pair (pair x y) f";;
+simplify q1_defs "match_pair (pair _1 _2) plus";;
+simplify q1_defs "match_pair (pair true false) or";;
+simplify q1_defs "match_pair (pair true false) and";;
+simplify q1_defs "(/p.match_pair p (/x./y.times (succ x) (succ y))) (pair _1 _2)";;
+simplify q1_defs "(/p.match_pair p (/x./y.eq y (succ x))) (pair _1 _2)";;
+simplify q1_defs "(/p.match_pair p (/x./y.eq y (succ x))) (pair _1 _3)";;
+*)
 
-let update_snd = ("update_snd","not_implemented")
+let fst = ("fst","/pair.pair (/x./y.x)") (* adapted this from the reading you gave us *);;
+
+let snd = ("snd","/pair.pair (/x./y.y)") (* adapted this from the reading you gave us *);;
+
+(*
+simplify q1_defs "fst (pair a b)";;
+simplify q1_defs "snd (pair a b)";;
+simplify q1_defs "fst (pair _3 (plus _1 _1))";;
+simplify q1_defs "snd (pair _3 (plus _1 _1))";;    
+*)
+
+let update_fst = ("update_fst","/op./v.(pair v (snd op))");; (* op = original pair, v = value *)
+
+let update_snd = ("update_snd","/op./v.(pair (fst op) v)");; (* yay anonymous functions *)
+
+(*
+simplify q1_defs "fst (update_fst (pair a b) c)";;
+simplify q1_defs "snd (update_fst (pair a b) c)";;
+simplify q1_defs "fst (update_snd (pair a b) c)";;
+simplify q1_defs "snd (update_snd (pair a b) c)";;
+*)
 
 
 (* 

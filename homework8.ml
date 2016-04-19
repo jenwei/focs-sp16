@@ -7,7 +7,11 @@ Name: Jennifer Wei
 Email: jennifer.wei@students.olin.edu
 
 Remarks, if any:
-
+- Received some tips from Dennis and Pratool about approaching Q2 and Q3
+- Received a protip from Dennis about how to indent the lambda expression to look more like a function/code
+- Any suggestions on debugging lambda terms? Tried excessive indenting but that still took a while (esp.  
+	Q2c - spent forever debugging - I think the resolution was that I put parentheses around too many lines 
+	and didn't separate the conditions correctly)
 *)
 
 
@@ -306,6 +310,7 @@ let default_defs = [ ("true","/x./y.x");
 *
 *)
 
+(*minus takes two natural numbers m and n and returns the natural number m-n*)
 let minus = ("minus","/m./n.n pred m") (* this one was given to us *);;
 
 let geq = ("geq","/m./n.iszero (minus n m)") (* adapted this from the reading you gave us *);;
@@ -362,10 +367,8 @@ simplify q1_defs "fst (update_snd (pair a b) c)";;
 simplify q1_defs "snd (update_snd (pair a b) c)";;
 *)
 
-
 (* 
 * Make sure all your definitions are added to this -- this is what I'll be testing 
-* 
 *)
 
 let q1_defs = default_defs @ [ minus; geq; eq; pair; match_pair; fst; snd; update_fst; update_snd]
@@ -384,21 +387,93 @@ let q1_defs = default_defs @ [ minus; geq; eq; pair; match_pair; fst; snd; updat
 *
 *)
 
-let int = ("int","not_implemented")
+(*int takes a natural number and returns a postive number*)
+let int = ("int","/n.pair true n");;
 
-let neg_int = ("neg_int","not_implemented")
+(*
+simplify q2_defs "fst (int _0)";;
+simplify q2_defs "fst (int _1)";;
+simplify q2_defs "snd (int _1)";;
+simplify q2_defs "snd (int _2)";;
+*)
 
-let plus_int = ("plus_int","not_implemented")
+(*neg_int takes an encoded integer and returns its negation*)
+let neg_int = ("neg_int","/n.(pair (not (fst n)) (snd n))");;
 
-let times_int = ("times_int","not_implemented")
+(*
+simplify q2_defs "fst (neg_int (int _3))";;
+simplify q2_defs "snd (neg_int (int _3))";;
+simplify q2_defs "fst (neg_int (neg_int (int _3)))";;
+simplify q2_defs "snd (neg_int (neg_int (int _3)))";;
+*)
 
+(*plus_int takes two encoded integers m and n and returns integer m+n*)
+(*check the signs of m and n and based on that, determines whether to plus or minus and apply 
+int or neg_int*)
+let plus_int = ("plus_int",
+	"/m./n.
+	if (fst m) 
+		(
+			if (fst n) 
+				(int (plus (snd m) (snd n)))
+				(
+					if (geq (snd m) (snd n)) 
+					(int (minus (snd m) (snd n)))
+					(neg_int (int (minus (snd n) (snd m))))
+				)
+		)
+	(
+		if (fst n) 
+			(
+				if (geq (snd m) (snd n)) 
+				(neg_int (int (minus (snd m) (snd n))))
+				(int (minus (snd n) (snd m)))
+			)
+		(neg_int (int (plus (snd m) (snd n))))
+	)");;
+
+(*
+simplify q2_defs "fst (plus_int (int _3) (int _2))";;
+simplify q2_defs "snd (plus_int (int _3) (int _2))";;
+simplify q2_defs "fst (plus_int (int _3) (neg_int (int _2)))";;
+simplify q2_defs "snd (plus_int (int _3) (neg_int (int _2)))";;
+simplify q2_defs "fst (plus_int (neg_int (int _3)) (int _2))";;
+simplify q2_defs "snd (plus_int (neg_int (int _3)) (int _2))";;
+simplify q2_defs "fst (plus_int (neg_int (int _3)) (neg_int (int _2)))";;
+simplify q2_defs "snd (plus_int (neg_int (int _3)) (neg_int (int _2)))";;
+*)
+
+
+(*times_int takes two encoded integers and returns integer mxn*)
+let times_int = ("times_int", "/m./n.
+	if (fst m) 
+		(
+			if (fst n) 
+				(int (times (snd m) (snd n)))
+				(neg_int (int (times (snd m) (snd n))))
+		)
+	(
+		if (fst n) 
+			(neg_int (int (times (snd m) (snd n))))
+		(int (times (snd m) (snd n)))
+	)");;
+
+(*
+simplify q2_defs "fst (times_int (int _3) (int _2))";;
+simplify q2_defs "snd (times_int (int _3) (int _2))";;
+simplify q2_defs "fst (times_int (int _3) (neg_int (int _2)))";;
+simplify q2_defs "snd (times_int (int _3) (neg_int (int _2)))";;
+simplify q2_defs "fst (times_int (neg_int (int _3)) (int _2))";;
+simplify q2_defs "snd (times_int (neg_int (int _3)) (int _2))";;
+simplify q2_defs "fst (times_int (neg_int (int _3)) (neg_int (int _2)))";;
+simplify q2_defs "snd (times_int (neg_int (int _3)) (neg_int (int _2)))";;
+*)
 
 (* 
 * Make sure all your definitions are added to this -- this is what I'll be testing 
-* 
 *)
 
-let q2_defs = default_defs @ [int; neg_int; plus_int; times_int ]
+let q2_defs = default_defs @ [minus; geq; eq; pair; match_pair; fst; snd; update_fst; update_snd; int; neg_int; plus_int; times_int ]
 
 
 (*************************************************************

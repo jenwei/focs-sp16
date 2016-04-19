@@ -12,6 +12,8 @@ Remarks, if any:
 - Any suggestions on debugging lambda terms? Tried excessive indenting but that still took a while (esp.  
 	Q2c - spent forever debugging - I think the resolution was that I put parentheses around too many lines 
 	and didn't separate the conditions correctly)
+- Received help from Dennis on Q3 about how empty and cons should work
+- Spent a while debugging Q3d, only to realize that I forgot to add /append to the head T__T
 *)
 
 
@@ -488,19 +490,37 @@ let q2_defs = default_defs @ [minus; geq; eq; pair; match_pair; fst; snd; update
 *
 *)
 
-let empty = ("empty","not_implemented")
+let empty = ("empty","/a./f.a");;
 
-let cons = ("cons","not_implemented")
+let cons = ("cons","/h./t./a./f.f h t");;
 
-let match_list = ("match_list","not_implemented")
+let match_list = ("match_list","/L./a./f. L a f ");;
 
-let length = ("length","not_implemented")
+let length = ("length","Y 
+	(
+		/length./L.
+			match_list L _0 (/h./t. (plus _1 (length t)))
+	)");;
 
-let sum = ("sum","not_implemented")
+(*sum has the same structure as length except instead of doing +1, we're summing the elements*)
+let sum = ("sum","Y 
+	(
+		/sum./L.
+			match_list L _0 (/h./t. (plus h (sum t)))
+	)");;
 
-let append = ("append","not_implemented")
-
-let map = ("map","not_implemented")
+(*append takes two encoded lists and returns the list made up of all elements of L1 followed by all 
+elements of L2*)
+let append = ("append","Y 
+	(
+		/append./L1./L2. match_list L1 L2 (/h./t. (cons h (append t L2)))
+	)");;
+	
+(*map takes a function f and an encoded list L and returns the list obtained by applying function f 
+to every element of L*)
+let map = ("map","Y 
+	(
+		/map./f./L. match_list L empty (/h./t. cons (f h) (map f t))
+	)");;
 
 let q3_defs = default_defs @ [empty; cons; match_list; length; sum; append; map]
-

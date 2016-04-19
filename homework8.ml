@@ -432,7 +432,8 @@ let plus_int = ("plus_int",
 				(int (minus (snd n) (snd m)))
 			)
 		(neg_int (int (plus (snd m) (snd n))))
-	)");;
+	)"
+);;
 
 (*
 simplify q2_defs "fst (plus_int (int _3) (int _2))";;
@@ -444,7 +445,6 @@ simplify q2_defs "snd (plus_int (neg_int (int _3)) (int _2))";;
 simplify q2_defs "fst (plus_int (neg_int (int _3)) (neg_int (int _2)))";;
 simplify q2_defs "snd (plus_int (neg_int (int _3)) (neg_int (int _2)))";;
 *)
-
 
 (*times_int takes two encoded integers and returns integer mxn*)
 let times_int = ("times_int", "/m./n.
@@ -458,7 +458,8 @@ let times_int = ("times_int", "/m./n.
 		if (fst n) 
 			(neg_int (int (times (snd m) (snd n))))
 		(int (times (snd m) (snd n)))
-	)");;
+	)"
+);;
 
 (*
 simplify q2_defs "fst (times_int (int _3) (int _2))";;
@@ -500,27 +501,31 @@ let length = ("length","Y
 	(
 		/length./L.
 			match_list L _0 (/h./t. (plus _1 (length t)))
-	)");;
+	)"
+);;
 
 (*sum has the same structure as length except instead of doing +1, we're summing the elements*)
 let sum = ("sum","Y 
 	(
 		/sum./L.
 			match_list L _0 (/h./t. (plus h (sum t)))
-	)");;
+	)"
+);;
 
 (*append takes two encoded lists and returns the list made up of all elements of L1 followed by all 
 elements of L2*)
 let append = ("append","Y 
 	(
 		/append./L1./L2. match_list L1 L2 (/h./t. (cons h (append t L2)))
-	)");;
+	)"
+);;
 	
 (*map takes a function f and an encoded list L and returns the list obtained by applying function f 
 to every element of L*)
 let map = ("map","Y 
 	(
 		/map./f./L. match_list L empty (/h./t. cons (f h) (map f t))
-	)");;
+	)"
+);;
 
 let q3_defs = default_defs @ [empty; cons; match_list; length; sum; append; map]

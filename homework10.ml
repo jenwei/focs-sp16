@@ -2,9 +2,9 @@
 
 HOMEWORK 10
 
-Name: 
+Name: Jennifer Wei
 
-Email:
+Email: jennifer.wei@students.olin.edu
 
 Remarks, if any:
 

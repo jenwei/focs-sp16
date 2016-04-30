@@ -7,7 +7,9 @@ Name: Jennifer Wei
 Email: jennifer.wei@students.olin.edu
 
 Remarks, if any:
-
+- Received some guidance/tips from Pratool (and also got in-class notes from Pratool)
+- Considered taking advantage of pre/post/in order, but decided to go with an easier 
+  less intense and efficient version
 *)
 
 
@@ -55,40 +57,77 @@ let pbt bt =
 
 (* Q1 *)
 
-let rec size t = failwith ("size not implemented")
+(* a *)
+let rec size t = 
+  match t with 
+    | Empty -> 0
+    | Node(n,left,right) -> 1 + (size left) + (size right)
+;;
+
+let rec sum t = 
+  match t with 
+    | Empty -> 0
+    | Node(n,left,right) -> n + (sum left) + (sum right)
+;;
+
+let rec height t = 
+  match t with 
+    | Empty -> 0
+    | Node(n,left,right) -> 1 + (if (height left) > (height right) then (height left) else (height right))
+;;
+
+(* b *)
+let rec fringe t = 
+    match t with 
+    | Empty -> []
+    | Node(n,left,right) -> if (fringe(left) = []) && (fringe(right) = []) then [n] else fringe(left) @ fringe(right)
+;;
+
+(* c *)
+let rec map f t = 
+  match t with 
+    | Empty -> Empty
+    | Node(n,left,right) -> Node((f n),(map f left),(map f right))
+;;
+
+(* d *)
+let rec fold f t b = 
+    match t with 
+    | Empty -> b
+    | Node(n,left,right) -> f n (fold f left b) (fold f right b)
+;;
+
+let preorder t = 
+  fold (fun v l r -> ([v] @ l @ r)) t []
+;;
+
+let postorder t = 
+    fold (fun v l r -> (l @ r @ [v] )) t []
+;;
 
 
-let rec sum t = failwith ("sum not implemented")
+let inorder t = 
+    fold (fun v l r -> (l @ [v] @ r)) t []
+;;
+
+(* e *)
+let rec bst_insert t x = 
+    match t with 
+    | Empty -> Node(x,Empty,Empty)
+    | Node(n,left,right) -> if (x > n) then Node(n,left,(bst_insert right x)) else Node(n,(bst_insert left x),right)
+;;
 
 
-let rec height t = failwith ("height not implemented")
+let rec bst_lookup t x = 
+    match t with 
+    | Empty -> false
+    | Node(n,left,right) -> if (x = n) then true else
+      if (x > n) then (bst_lookup right x) else (bst_lookup left x)
+;;
 
 
-let rec fringe t = failwith ("fringe not implemented")
+let rec bstify t =  List.fold_right (fun x t -> (bst_insert t x)) (inorder t) Empty
+;;
 
 
-let rec map f t = failwith ("map not implemented")
-
-
-let rec fold f t b = failwith ("fold not implemented")
-
-
-let preorder t = failwith ("preorder not implemented")
-
-
-let postorder t = failwith ("postorder not implemented")
-
-
-let inorder t = failwith ("inorder not implemented")
-
-
-let rec bst_insert t x = failwith ("bst_insert not implemented")
-
-
-let rec bst_lookup t x = failwith ("bst_lookup not implemented")
-
-
-let rec bstify t =  failwith ("bstify not implemented")
-
-
-let avl_insert t x = failwith ("avl_insert not implemented")
+let avl_insert t x = failwith ("avl_insert not implemented or attempted")

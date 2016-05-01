@@ -9,6 +9,7 @@ Email: jennifer.wei@students.olin.edu
 Remarks, if any:
 - received help from Pratool and Kyle with reviewing streams 
   and how recursion works with streams
+- received help from Dennis on approaching arctan
 
 *)
 
@@ -197,17 +198,71 @@ let rec stutter s =
  * 
  *)
 
-let rec arctan z = failwith "not implemented"
+(* recommended helper functions *)
+let scalef n s = 
+  map (fun x -> n*.x) s
+;;
 
-(* PLACEHOLDER -- REPLACE WITH YOUR OWN DEFINITION *)
+let addf s1 s2 =
+  map (fun (x,y) -> x+.y) (zip s1 s2)
+;;
 
-let pi = cst (0)
-    
-let rec newton f df guess = failwith "not implemented"
+(* adapted from the homework9 documentation *)
+let drop s = 
+  let (f,r) = split s in 
+    r
+;;
 
-let derivative f x = failwith "not implemented"
+(* floatifying odds *)
+let oddsf = map (fun x -> float_of_int x) odds;;
 
-let limit epsilon s = failwith "not implemented"
+(* floatify any stream *)
+let tof s = map (fun x -> s*.x) (cst 1.0);;
+
+let rec psumsf s = 
+  fby s (fun () -> addf (psumsf s) (drop s))
+;;
+
+(* a *)
+(* used format from nats example *)
+let arctanfactors =
+  let rec factorsF () = 
+    fby (cst 1.0) (fun () -> map (fun (x) -> (if x>0.0 then ((-1.0) *.(x+.2.0)) else (-1.0*.(x-.2.0)))) (factorsF ())) in 
+  factorsF ()
+;;
+
+let partials z = 
+  (* Dennis helped me figure out and change variable names because I was dumb and used `val` *)
+  map (fun (a,b) -> (a**(abs_float b))/.b) (zip (cst z) arctanfactors) 
+;;   
+
+(*abstracted recursion out of arctan and into arctanfactors *)
+let arctan z = psumsf (partials z);;
+
+let pi = addf (scalef (16.0) (arctan (1.0/.5.0))) (scalef (-4.0) (arctan (1.0/.239.0)));;
+
+(* b *)
+let rec newton f df guess = 
+  fby (cst guess) (fun () -> map (fun (z) -> z -. (f z)/.(df z)) (newton f df guess))
+;;
+
+(* c *)
+
+let derivfactors =
+  let rec factorsF () = 
+    fby (cst 1.0) (fun () -> map (fun (x) -> (x +. 1.0)) (factorsF ())) in 
+      map (fun (x) -> 1.0 /.x) (factorsF ())
+;;
+
+let derivative f x = 
+  map (fun (a,b) -> ((f (a+.b))-.f(a))/.b) (zip (cst x) derivfactors) 
+;;
+
+(* d *)
+let limit epsilon s = 
+  filter (fun x y -> abs_float (x-.y)<epsilon) (drop s) s
+  (* filter (fun x y -> if (x>y) then (x-.y<epsilon) else (y-.x<epsilon)) (drop s) s *)
+;;
 
 
 (* 

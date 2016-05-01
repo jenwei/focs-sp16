@@ -247,7 +247,6 @@ let rec newton f df guess =
 ;;
 
 (* c *)
-
 let derivfactors =
   let rec factorsF () = 
     fby (cst 1.0) (fun () -> map (fun (x) -> (x +. 1.0)) (factorsF ())) in 

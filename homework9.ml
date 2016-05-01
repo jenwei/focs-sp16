@@ -10,7 +10,9 @@ Remarks, if any:
 - received help from Pratool and Kyle with reviewing streams 
   and how recursion works with streams
 - received help from Dennis on approaching arctan
-
+- received help from Dennis on debugging stripes (I tried unzipping x within the map function T___T)
+- Dennis also helped explain parts of Q3 and doublecheck my diagrams (didn't realize until later that 
+  sieve would be a good reference)
 *)
 
 
@@ -270,12 +272,34 @@ let limit epsilon s =
  *)
 
 
-let rev_prefixes s = failwith "not implemented"
+let rev_prefixes s = 
+  fold (fun a r -> [r]@a) (cst []) s
+;;
 
-let prefixes s = failwith "not implemented"
+let prefixes s = 
+  fold (fun a r -> a@[r]) (cst []) s
+;;
 
-let stripes s1 s2 = failwith "not implemented"
+let rec stripes_pairs (x,y) = 
+  match x with 
+      | [] -> []
+      | xh::xt -> 
+        match y with 
+        | yh::yt -> (xh,yh) :: (stripes_pairs (xt,yt))
+        |_ -> failwith "sadness - something went wrong"
 
-let rec flatten ss = failwith "not implemented"
+let stripes s1 s2 = 
+  map (fun x -> stripes_pairs x) (zip (prefixes s1) (rev_prefixes s2))
+;; 
 
-let pairs s1 s2 =  failwith "not implemented"
+let rec flatten ss = 
+  let filtered = (filter (fun x y -> y != []) (cst []) ss) in 
+    let (f,r) = split filtered in 
+          fby 
+            (map (fun (h::t) -> h) f) 
+            (fun () -> 
+              flatten (fby (map (fun (hh::tt) -> tt) f) (fun () -> r))
+            )
+;;
+
+let pairs s1 s2 = flatten (stripes s1 s2);;

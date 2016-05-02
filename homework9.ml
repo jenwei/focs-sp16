@@ -181,12 +181,12 @@ let unzip s =
 ;;
 
 let rec fold f init_s s = 
-  let input = zip (fby init_s (fun () -> (fold f init_s s))) s in
+  let input = zip s (fby init_s (fun () -> (fold f init_s s))) in
     map (fun (x,y) -> f x y) input
 ;;
 
-let running_max s = 
-  fold (fun x y -> if x > y then x else y) (let (x,y) = split s in x) s
+let running_max s =
+   fold (fun x y -> if (x > y) then x else y) (let (x,y) = split s in x) s
 ;;
 
 let rec stutter s = 
@@ -273,11 +273,11 @@ let limit epsilon s =
 
 
 let rev_prefixes s = 
-  fold (fun a r -> [r]@a) (cst []) s
+  fold (fun a r -> a::r) (cst []) s
 ;;
 
 let prefixes s = 
-  fold (fun a r -> a@[r]) (cst []) s
+  fold (fun a r -> r@[a])  (cst []) s
 ;;
 
 let rec stripes_pairs (x,y) = 
